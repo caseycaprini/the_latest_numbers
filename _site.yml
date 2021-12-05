@@ -1,0 +1,15 @@
+name: "the_latest_numbers"
+title: "The Latest Numbers"
+description: |
+  Meanderings of a Curious Fan
+output_dir: "docs"
+theme: theme.css
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - text: "2021 NFL Time Average Ranks"
+      href: 2021-nfl-time-average-ranks.html
+output: distill::distill_article

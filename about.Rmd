@@ -1,0 +1,33 @@
+---
+title: "Casey (left)"
+image: "caprinis_summer_2020.jpg"
+description: |
+  Why your time is likely better spent elsewhere
+links:
+  - label: GitHub
+    url: "https://github.com/caseycaprini/"
+  - label: LinkedIn
+    url: "https://www.linkedin.com/in/casey-caprini-798a79a3/"
+  - label: Email
+    url: "mailto:caseycaprini@gmail.com"
+output:
+  postcards::trestles
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+### Content
+This blog might well contain explorations of sports questions using data.<br>
+<br>
+WARNING: I'm an amateur in every sense applicable.  I've always liked sports and math.  My expertise, if existent, is in the area of nuclear power plant operations.<br>
+<br>
+Baseball was my first love.  With less disposable time, I've drifted to the NFL.  I've lived most of my life in southwestern PA.  Therefore, I'm an honest-to-goodness Pirates fan that also likes the Steelers and Penguins.<br>
+<br>
+I didn't write a line of code from 2007 until 2019, when I was introduced to R and the tidyverse.  This blog contains byproducts of my attempts at learning.
+
+### Blog Name
+This blog's title is a hat tip to the band [toe](https://www.toe.st/).  I'm indebted to the YouTube algorithm for the introduction.<br>
+<br>
+If you're reading this, a better use of your time would be to check them out [here](https://youtu.be/jDHmg8Mb9wo).

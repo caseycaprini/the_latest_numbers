@@ -1,0 +1,178 @@
+---
+title: "Time Average Metrics for NFL Team Quality"
+description: |
+  An average that better accounts for game script and discounts the backdoor cover.
+author:
+  - name: Casey Caprini
+date: 11-28-2021
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(nflfastR)
+library(ggimage)
+library(nfltools)
+library(patchwork)
+```
+
+```{r echo=FALSE}
+df_2020_summary <- nfl_mvt_season(year = 2020) %>%
+  nfl_mvt_season_summary()
+
+p_2020 <- plot_adj_mvt_season_summary(df_2020_summary,
+                                      weeks_played = 17,
+                                      year = 2020)
+
+asp_ratio <- 1.618
+width <- 8
+ggsave("mvt_2020_final.png",
+       p_2020,
+       width = width, height = width/asp_ratio,
+       dpi = "retina")
+```
+![2020 NFL Regular Season Time Average Rankings](mvt_2020_final.png)
+
+### Why "time average" point differentials?
+Inspired by an Ole Peters talk on [Ergodicity Economics](https://youtu.be/LGqOH3sYmQA), I was curious to investigate time averages in NFL games.  Like life, my prior is that a football game is path dependent. Game script matters, and play calling goals vary over with situation. Some teams can't effectively play from behind.  
+
+At the time, I was reading 2021 NFL season previews and retrospectives on the 2020 season. The hypothesis was this: because of path dependence, time average point differential data might enable better assessment of regular season team quality than aggregate point differentials and other aggregate metrics (e.g., [Pythagorean Win Expectation](https://en.wikipedia.org/wiki/Pythagorean_expectation)).
+
+A few other notes:
+
+* The units of the metric is points, which is intuitive to football fans.
+* For better or worse, the value of the metric relies on the assumption that a time average is informative rather than modeling assumptions.
+
+If your curious, the current NFL season to date results (with an adjustment for opponent quality) can be found linked on the top navigation bar.
+
+#### A few concrete example games
+Consider the win probability graphs for two games in Week 1 of 2021.  
+
+* PIT 23, BUF 16  
+* SF 41, DET 33  
+
+
+```{r week_1_examples, echo=FALSE}
+example_1_id <- fast_scraper_schedules(2021) %>%
+  filter(week == 1) %>%
+  filter(home_team == "PIT" | away_team == "PIT") %>%
+  pull(game_id)
+
+pit_color <- teams_colors_logos %>%
+  filter(team_abbr == "PIT") %>%
+  pull(team_color)
+
+pit_ex_mean_point_diff <- load_pbp(2021) %>%
+  filter(game_id == example_1_id) %>%
+  mvt_game("PIT") %>%
+  pull(mean_point_diff) %>%
+  round(1)
+
+#PIT Win Prob Graph, Week 1
+load_pbp(2021) %>%
+  filter(game_id == example_1_id) %>%
+  mutate(game_minutes = (3600 - game_seconds_remaining)/60) %>%
+  filter(is.na(away_wp_post) == FALSE) %>%
+  ggplot(aes(x = game_minutes, y = away_wp_post)) +
+  geom_hline(yintercept = 0.5,
+             linetype = "dashed") +
+  geom_vline(xintercept = c(0, 60),
+             color = "black") +
+  geom_vline(xintercept = c(15, 30, 45),
+             color = "dark gray") +
+  geom_line(color = pit_color) +
+  scale_x_continuous(breaks = seq(from = 0, to = 60, by = 10)) +
+  scale_y_continuous(breaks = seq(from = 0, to = 1, by = 0.2),
+                     labels = scales::percent_format(accuracy = 1)) +
+  theme_light() +
+  labs(x = "Minutes Played",
+       y = "PIT Win Probability",
+       title = "Week 1: PIT 23-16 Win @ BUF") -> p_top
+
+example_2_id <- fast_scraper_schedules(2021) %>%
+  filter(home_team %in% c("SF", "DET") & away_team %in% c("SF", "DET")) %>%
+  pull(game_id)
+
+sf_color <- teams_colors_logos %>%
+  filter(team_abbr == "SF") %>%
+  pull(team_color)
+
+sf_ex_mean_point_diff <- load_pbp(2021) %>%
+  filter(game_id == example_2_id) %>%
+  mvt_game("SF") %>%
+  pull(mean_point_diff) %>%
+  round(1)
+
+#SF Win Prob Graph, Week 1
+load_pbp(2021) %>%
+  filter(game_id == example_2_id) %>%
+  mutate(game_minutes = (3600 - game_seconds_remaining)/60) %>%
+  filter(is.na(away_wp_post) == FALSE) %>%
+  ggplot(aes(x = game_minutes, y = away_wp_post)) +
+  geom_hline(yintercept = 0.5,
+             linetype = "dashed") +
+  geom_vline(xintercept = c(0, 60),
+             color = "black") +
+  geom_vline(xintercept = c(15, 30, 45),
+             color = "dark gray") +
+  geom_line(color = sf_color) +
+  scale_x_continuous(breaks = seq(from = 0, to = 60, by = 10)) +
+  scale_y_continuous(breaks = seq(from = 0, to = 1, by = 0.2),
+                     labels = scales::percent_format(accuracy = 1)) +
+  theme_light() +
+  labs(x = "Minutes Played",
+       y = "SF Win Probability",
+       title = "Week 1: SF 41-33 Win @ DET",
+       caption = "Data and Win Probability via nflfastR") -> p_bottom
+
+asp_ratio <- 1.618
+width <- 6
+ggsave("pit_week_1_2021_win_prob.png",
+       p_top,
+       width = width, height = width/asp_ratio,
+       dpi = "retina")
+ggsave("sf_week_1_2021_win_prob.png",
+       p_bottom,
+       width = width, height = width/asp_ratio,
+       dpi = "retina")
+```
+
+![](pit_week_1_2021_win_prob.png)
+
+![](sf_week_1_2021_win_prob.png)
+
+
+Despite the similar margin of victory for both teams, the Win Probability graphs reflect very different paths to the result.  
+
+* The Steelers surged to take control in the 4th quarter, fueled by a Bills turnover on downs near midfield and a Pittsburgh TD on a blocked punt.  
+* The Lions never threatened the 49ers until late.  Detroit scored two TDs and converted two 2-point conversions after the 2-minute warning in the 4th that featured 49er defensive lapses, a successful DET onside kick, and a SF fumble.  
+
+
+The <b>time average point differential for a game is a coarse-grained metric for the game's competitiveness</b>: the Steelers made big plays late to win a close game, while the 49ers controlled the game until hilarity ensued inside of 2-minutes.  
+
+
+|Team  | Margin of Victory | Time Average Point Diff      |
+|------|:-----------------:|:----------------------------:|
+|PIT   | 7                 | `r pit_ex_mean_point_diff[1]`|
+|SF    | 8                 | `r sf_ex_mean_point_diff[1]` |
+
+
+### Recent NFL seasons
+The following shows the distribution of time average game results (from the home team's perspective) for all regular season games in 2011 to 20202.
+![](mean_point_diff_dist_2011_2020.png)
+
+As expected
+
+* Most positive time average differentials result in wins, and most negative time average point differentials result in losses.
+* There is a home team advantage: on average, home teams lead by ~1.4 points at any given point in regular season regulation time for the decade considered.
+
+### Resources and sources of inspiration
+I the most amateur of R users.  This post contains adapted code and inspiration from:
+
+* Tom Mock's excellent posts on [plotting images](https://themockup.blog/posts/2020-10-11-embedding-images-in-ggplot/) and [tables](https://jthomasmock.github.io/gtExtras/)  
+* Shannon Pileggi's excellent blog post on [creating your own R package](https://www.pipinghotdata.com/posts/2020-10-25-your-first-r-package-in-1-hour/).  
