@@ -1,0 +1,27 @@
+{
+    "id": "CFA82656",
+    "path": "~/the_latest_numbers/_posts/2021-11-28-time-average-nfl-metrics/time-average-nfl-metrics.Rmd",
+    "project_path": "_posts/2021-11-28-time-average-nfl-metrics/time-average-nfl-metrics.Rmd",
+    "type": "r_markdown",
+    "hash": "115152503",
+    "contents": "",
+    "dirty": false,
+    "created": 1638935956826.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "160,35",
+        "scrollLine": "147",
+        "last_setup_crc32": "63F7934Eb4675f20"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1638936245,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1638936245885,
+    "read_only": false,
+    "read_only_alternatives": []
+}
