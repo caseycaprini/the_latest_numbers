@@ -16,19 +16,31 @@ library(nflfastR)
 library(nfltools)
 library(gt)
 library(gtExtras)
+library(nflplotR)
 
 weekly_2021 <- nfl_mvt_season(year = 2021)
 summary_2021 <- nfl_mvt_season_summary(weekly_2021)
+median_2021 <- weekly_2021 %>%
+  filter(is.na(home_away) == FALSE) %>%
+  group_by(team) %>%
+  summarize(METAL = median(mean_point_diff))
 
-summ_tbl <- left_join(summary_2021, teams_colors_logos,
+df <- left_join(summary_2021 %>%
+                  select(team, adj_mean_point_diff, opp_mean_point_diff),
+                median_2021,
+                by = c("team" = "team")) %>%
+  rename(TALE = adj_mean_point_diff,
+         `TALE SOS` = opp_mean_point_diff)
+
+summ_tbl <- left_join(df, teams_colors_logos,
                       by = c("team" = "team_abbr"))
 
 game_results <- nfl_reg_season_summary(year = 2021) %>%
   mutate(games_played = wins + losses + ties) %>%
-  unite("Record", wins:ties, sep = "-") %>%
+  unite("RECORD", wins:ties, sep = "-") %>%
   rename(`Season Point Diff` = season_point_diff) %>%
-  mutate(`Average Point Diff` = `Season Point Diff`/games_played) %>%
-  select(team, Record, `Season Point Diff`, `Average Point Diff`)
+  mutate(`AVG +/-` = `Season Point Diff`/games_played) %>%
+  select(team, RECORD, `AVG +/-`)
 
 weeks_played <- weekly_2021 %>%
   filter(is.na(home_away) == FALSE) %>%
@@ -37,39 +49,74 @@ weeks_played <- weekly_2021 %>%
   pull(weeks)
 ```
 
-```{r, echo=FALSE}
+## Graphical Summary
+
+```{r graph, echo=FALSE}
+df %>%
+  ggplot(aes(x = TALE, y = METAL)) +
+  geom_abline(slope = -1, intercept = seq(from = -18, to = 18, by = 6),
+              color = "light gray") +
+  geom_vline(xintercept = 0,
+             color = "black") +
+  geom_hline(yintercept = 0,
+             color = "black") +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.05,
+                 alpha = 0.7) +
+  scale_x_continuous(breaks = seq(from = -15, to = 15, by = 3),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(from = -15, to = 15, by = 3),
+                     minor_breaks = NULL) +
+  theme_light() +
+  labs(title = "2021 NFL Time Average Tiers",
+       x = "Time Avg Lead Eval (Points)",
+       y = "Median Time Avg Lead (Points)",
+       caption = "Data via nflfastR. Plot via nflplotR.")
+```
+
+## Table
+
+```{r table, echo=FALSE}
+
 summ_tbl %>%
-  select(team, team_logo_espn, adj_mean_point_diff, opp_mean_point_diff) %>%
-  arrange(desc(adj_mean_point_diff)) %>%
+  select(team, team_logo_espn, METAL, TALE, `TALE SOS`) %>%
+  arrange(desc(METAL)) %>%
   left_join(game_results,
             by = c("team" = "team")) %>%
-  mutate(rank = row_number(desc(adj_mean_point_diff)),
-         adj_mean_point_diff = round(adj_mean_point_diff, 1),
-         opp_mean_point_diff = round(opp_mean_point_diff, 1),
-         `Avg Point Diff` = round(`Average Point Diff`, 1),
-         `Avg Point Diff Rank` = row_number(desc(`Avg Point Diff`))) %>%
-  select(rank,
-         team_logo_espn,
-         adj_mean_point_diff,
-         opp_mean_point_diff,
-         Record,
-         `Season Point Diff`,
-         `Avg Point Diff`,
-         `Avg Point Diff Rank`) %>%
-  rename(Team = team_logo_espn,
-         Rank = rank,
-         `Adj Time Average Point Diff` = adj_mean_point_diff,
-         `Opponent Quality` = opp_mean_point_diff) %>%
+  mutate(RANK = row_number(desc(METAL)),
+         METAL = round(METAL, 1),
+         TALE = round(TALE, 1),
+         `TALE SOS` = round(`TALE SOS`, 1),
+         `AVG +/-` = round(`AVG +/-`, 1)) %>%
+  rename(TEAM = team,
+         ` ` = team_logo_espn) %>%
+  select(TEAM,
+         ` `,
+         RANK,
+         METAL,
+         TALE,
+         `TALE SOS`,
+         RECORD,
+         `AVG +/-`) %>%
   gt() %>%
   tab_header(title = "2021 NFL Time Average Point Differential",
              subtitle = paste0("Through Week ",
                                weeks_played,
-                               ". Regulation only. Data via nflfastR. Table via gt and gtExtras.")) %>%
+                               ". Data: nflfastR. Table: gt, gtExtras.")) %>%
   cols_align(align = "center") %>%
-  gt_img_rows(Team)
+  gt_img_rows(` `)
 ```
 
+### Glossary
+Abbreviations used in table:
 
-
-
+* <b>METAL</b>: MEdian Time Average Lead.
+  * Median of time average leads for each game played by a team.
+* <b>TALE</b>: Time Average Lead Evaluation
+  * Average of time averaged leads for each game played by a team, adjusted for opponent quality (TALE SOS).
+  * TALE - TALE SOS = raw time average lead for regular season games played
+* <b>TALE SOS</b>: Time Average Lead Evaluation Strength of Schedule
+  * Average of opponents time average leads against other NFL teams
+* <b>AVG +/-</b>: Aggregate point differential, on per game basis
+  * (Season Points Scored - Season Points Allowed)/Games Played
 
