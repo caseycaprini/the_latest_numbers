@@ -1,0 +1,27 @@
+{
+    "id": "76EED075",
+    "path": "~/the_latest_numbers/2021-nfl-time-average-ranks.Rmd",
+    "project_path": "2021-nfl-time-average-ranks.Rmd",
+    "type": "r_markdown",
+    "hash": "1441982630",
+    "contents": "",
+    "dirty": false,
+    "created": 1639924543948.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "53,74",
+        "scrollLine": "22",
+        "last_setup_crc32": "223DF87146e912a"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1639925481,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1639925481596,
+    "read_only": false,
+    "read_only_alternatives": []
+}
