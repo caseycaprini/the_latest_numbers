@@ -92,15 +92,14 @@ summ_tbl %>%
          ` ` = team_logo_espn) %>%
   select(TEAM,
          ` `,
-         RANK,
          METAL,
          TALE,
          `TALE SOS`,
          RECORD,
          `AVG +/-`) %>%
   gt() %>%
-  tab_header(title = "2021 NFL Time Average Point Differential",
-             subtitle = paste0("Through Week ",
+  tab_header(title = "2021 Time Average Metrics (Points)",
+             subtitle = paste0("Reg season only, thru Week ",
                                weeks_played,
                                ". Data: nflfastR. Table: gt, gtExtras.")) %>%
   cols_align(align = "center") %>%
@@ -117,6 +116,6 @@ Abbreviations used in table:
   * TALE - TALE SOS = raw time average lead for regular season games played
 * <b>TALE SOS</b>: Time Average Lead Evaluation Strength of Schedule
   * Average of opponents time average leads against other NFL teams
-* <b>AVG +/-</b>: Aggregate point differential, on per game basis
+* <b>AVG +/-</b>: Aggregate point differential for team, on per game basis
   * (Season Points Scored - Season Points Allowed)/Games Played
 
