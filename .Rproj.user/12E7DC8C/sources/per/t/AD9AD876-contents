@@ -1,10 +1,10 @@
 ---
 title: "2021 NFL Time Average Point Differentials"
 description: |
-  Updated through Week 14.
+  Updated through 12/21/2021.
 author:
   - name: Casey Caprini
-date: 12-14-2021
+date: 12-21-2021
 output:
   distill::distill_article:
     self_contained: false
@@ -30,7 +30,7 @@ df <- left_join(summary_2021 %>%
                 median_2021,
                 by = c("team" = "team")) %>%
   rename(TALE = adj_mean_point_diff,
-         `TALE SOS` = opp_mean_point_diff)
+         SOS = opp_mean_point_diff)
 
 summ_tbl <- left_join(df, teams_colors_logos,
                       by = c("team" = "team_abbr"))
@@ -39,8 +39,8 @@ game_results <- nfl_reg_season_summary(year = 2021) %>%
   mutate(games_played = wins + losses + ties) %>%
   unite("RECORD", wins:ties, sep = "-") %>%
   rename(`Season Point Diff` = season_point_diff) %>%
-  mutate(`AVG +/-` = `Season Point Diff`/games_played) %>%
-  select(team, RECORD, `AVG +/-`)
+  mutate(`+/-` = `Season Point Diff`/games_played) %>%
+  select(team, RECORD, `+/-`)
 
 weeks_played <- weekly_2021 %>%
   filter(is.na(home_away) == FALSE) %>%
@@ -79,24 +79,24 @@ df %>%
 ```{r table, echo=FALSE}
 
 summ_tbl %>%
-  select(team, team_logo_espn, METAL, TALE, `TALE SOS`) %>%
-  arrange(desc(METAL)) %>%
+  select(team, team_logo_espn, METAL, TALE, SOS) %>%
+  arrange(desc((METAL+TALE)/2)) %>%
   left_join(game_results,
             by = c("team" = "team")) %>%
-  mutate(RANK = row_number(desc(METAL)),
+  mutate(RANK = row_number(desc((METAL+TALE)/2)),
          METAL = round(METAL, 1),
          TALE = round(TALE, 1),
-         `TALE SOS` = round(`TALE SOS`, 1),
-         `AVG +/-` = round(`AVG +/-`, 1)) %>%
+         SOS = round(SOS, 1),
+         `+/-` = round(`+/-`, 1)) %>%
   rename(TEAM = team,
          ` ` = team_logo_espn) %>%
   select(TEAM,
          ` `,
          METAL,
          TALE,
-         `TALE SOS`,
+         SOS,
          RECORD,
-         `AVG +/-`) %>%
+         `+/-`) %>%
   gt() %>%
   tab_header(title = "2021 Time Average Metrics (Points)",
              subtitle = paste0("Reg season only, thru Week ",
@@ -112,10 +112,14 @@ Abbreviations used in table:
 * <b>METAL</b>: MEdian Time Average Lead.
   * Median of time average leads for each game played by a team.
 * <b>TALE</b>: Time Average Lead Evaluation
-  * Average of time averaged leads for each game played by a team, adjusted for opponent quality (TALE SOS).
-  * TALE - TALE SOS = raw time average lead for regular season games played
-* <b>TALE SOS</b>: Time Average Lead Evaluation Strength of Schedule
-  * Average of opponents time average leads against other NFL teams
-* <b>AVG +/-</b>: Aggregate point differential for team, on per game basis
+  * Average of time averaged leads for each game played by a team, adjusted for opponent quality (SOS).
+  * TALE - SOS = unadjusted time average lead for regular season games played
+    * At any give point in regulation of 2021, team __ led by __ points.
+* <b>SOS</b>: Strength of Schedule
+  * Opponent quality based on average of opponent time average lead performances
+  * Only considers opponents already played
+  * Does not consider games against team of interest
+    * E.g., SOS calculation for HOU does not include the games played against HOU
+* <b>+/-</b>: Aggregate point differential for team, on per game basis
   * (Season Points Scored - Season Points Allowed)/Games Played
 
