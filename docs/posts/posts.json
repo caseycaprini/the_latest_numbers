@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/2022-01-02-net-offensive-holding/",
+    "title": "NFL Net Offensive Holding Calls",
+    "description": "A look at offensive holding calls by team and play type through Week 16.",
+    "author": [
+      {
+        "name": "Casey Caprini",
+        "url": {}
+      }
+    ],
+    "date": "2022-01-02",
+    "categories": [],
+    "contents": "\r\nMotivating questions\r\nThrough the black-and-gold colored glasses of a Steelers fan, it seemed like offensive holding calls basically were not called in 2020 (I can’t watch as much of other games as I’d like).\r\nI had been wondering how much a lack of holding calls may have negatively impacted the 2020 Steelers defense.\r\nHow crippling is a holding call to a drive?\r\nWhich teams have taken the most offensive holding penalties?\r\nWhich teams have drawn the most offensive holding calls?\r\nWhich teams draw the most holds while committing the fewest (i.e., drawn - taken = net holds drawn)?\r\nRecently, Matt Williamson wondered aloud whether more holds occur on run or pass plays on an episode of SNR: The Drive.\r\nMethod\r\nUsing play-by-play data via nflfastR:\r\nThrow out punt and kickoffs\r\nCount all holds called, even if declined or offset by another penalty\r\nIf not directly identified as a pass or run in the data set, infer whether the play call was a pass or run using keywords in the play description.\r\nSacks were counted as “pass” play calls.\r\nScrambles were also counted as play calls.\r\n\r\nThis is just amateur stuff for fun. I’m probably classifying some play calls incorrectly. I did a quick cross-check of total holding calls for 2021 against this website, and the results were tracking (it looks like the website includes special teams holds, whereas I threw them out).\r\nResults for 2021, Through Week 16\r\nAffect on series conversion rates\r\nBen Baldwin periodically post team series conversion rates, where a series is a success if it generates a new set of downs or scores a TD. Here’s a recent example.\r\nTypical series conversion rates for an offense are in the neighborhood of 70 percent.\r\nWhen an offense commits a holding penalty, the series conversion rate drops to 42.4 percent in 2021.\r\nNet offensive hold ranks\r\n\r\nOffensive holds committed ranks\r\n\r\nDefense offensive holding calls drawn ranks\r\n\r\nOffensive holds by play call\r\nThrough Week 16, 46.6 percent of all Offensive Holds have occurred on run plays.\r\nConclusion\r\nThis was a quick, interesting exercise.\r\nAn offensive holding call really does hurt a drive as much as it seems.\r\nIn the future, it would be interesting to look at the topic in more detail. For example, more holds were called on run plays (~54 percent) than pass plays in 2020, the opposite of 2021. Is there a trend in officiating, change in play call mix, or just random variation?\r\n\r\n\r\n\r\n",
+    "preview": {},
+    "last_modified": "2022-01-02T17:24:12-05:00",
+    "input_file": "net-offensive-holding.utf8.md"
+  },
+  {
     "path": "posts/2021-12-26-analytics-debate-gaps/",
     "title": "Gaps in the Analytics Debate",
     "description": "A few non-curmudgeonly issues with the \"pro analytics\" camp.",
