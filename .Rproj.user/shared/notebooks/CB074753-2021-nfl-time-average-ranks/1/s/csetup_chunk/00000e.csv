@@ -1,0 +1,63 @@
+"0","df <- weekly_2021 %>%
+  filter(is.na(home_away) == FALSE) %>%
+  group_by(team) %>%
+  summarize(metal = median(mean_point_diff),
+            tal = mean(mean_point_diff))
+
+df <- df %>%
+  left_join(season_summary_2021 %>%
+              select(team, opp_mean_point_diff),
+            by = c(""team"" = ""team"")) %>%
+  rename(sos = opp_mean_point_diff) %>%
+  mutate(tale = tal + sos)
+
+results_summary <- nfl_reg_season_summary(year = 2021) %>%
+  mutate(games_played = wins + losses + ties) %>%
+  unite(""record"", wins:ties, sep = ""-"") %>%
+  mutate(avg_point_diff = season_point_diff/games_played)
+"
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"1",""
+"0","df <- df %>%"
+"0","  left_join(results_summary %>%"
+"0","              select(team, record, avg_point_diff),"
+"0","            by = c(""team"" = ""team""))"
+"0",""
+"0","df <- teams_colors_logos %>%"
+"0","  select(team_logo_espn,"
+"0","         team_abbr) %>%"
+"0","  left_join(df,"
+"0","            by = c(""team_abbr"" = ""team"")) %>%"
+"0","  rename(team = team_abbr) %>%"
+"0","  filter(is.na(metal) == F)"
