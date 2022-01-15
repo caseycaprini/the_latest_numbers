@@ -1,0 +1,14 @@
+"0","# Summarize holding penalties drawn by each team
+team_off_hold_drawn <- nfl_hold_pbp_df %>%
+  group_by(opponent, off_hold_play_type) %>%
+  summarize(n_holds = n()) %>%
+  ungroup() %>%
+  rename(team = opponent)
+"
+"2","`summarise()` has grouped output by 'opponent'. You can override using the `.groups` argument.
+"
+"0","team_off_hold_drawn_totals <- team_off_hold_drawn %>%"
+"0","  group_by(team) %>%"
+"0","  summarize(total_holds = sum(n_holds))"
+"0","team_off_hold_drawn <- left_join(team_off_hold_drawn, team_off_hold_drawn_totals,"
+"0","                                  by = c(""team"" = ""team""))"
