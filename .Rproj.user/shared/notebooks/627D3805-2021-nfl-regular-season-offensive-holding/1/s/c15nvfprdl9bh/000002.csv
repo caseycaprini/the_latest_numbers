@@ -1,9 +1,0 @@
-"0","commit_wide <- team_off_hold_commit %>%
-  select(-c(net_holds)) %>%
-  pivot_wider(names_from = off_hold_play_type,
-              values_from = n_holds)
-"
-"2","Error: Can't subset columns that don't exist.
-[31mx[39m Column `net_holds` doesn't exist.
-[90mRun `rlang::last_error()` to see where the error occurred.[39m
-"

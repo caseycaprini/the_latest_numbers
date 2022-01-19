@@ -121,9 +121,78 @@ table_df <- teams_colors_logos %>%
 
 The following is a collection of offensive holding penalty statistics for the 2021 NFL regular season, derived from nflfastR play-by-play data.
 
-The totals below include all called holding penalties, even if declined or offset by another penalty. Plays identified as QB scrambles are counted as "pass" play calls.
+The totals below include all called holding penalties, even if declined or offset by another penalty. Plays identified as QB scrambles are counted as "pass" play calls. Spikes and kneel downs are not counted. Two point conversion attempts are also not counted.
 
 For the net offensive holds, positive numbers correspond to positive balance for the season: the team's defense drew more offensive holds than they committed.
+
+```{r calcu_nfl_totals, echo=FALSE}
+
+pbp_trim <- load_pbp(year) %>%
+  filter(season_type == "REG") %>%
+  filter(extra_point_attempt != 1) %>%
+  filter(two_point_attempt != 1) %>%
+  filter(field_goal_attempt!= 1) %>%
+  filter(kickoff_attempt != 1) %>%
+  filter(punt_attempt != 1) %>%
+  filter(timeout != 1) %>%
+  filter(qb_kneel != 1) %>%
+  filter(qb_spike != 1) %>%
+  filter(grepl("No Play.", desc) == F) %>%
+  mutate(play_call_type = case_when(rush_attempt == 1 ~ "Run",
+                                    pass_attempt == 1 ~ "Pass",
+                                    grepl("pass", desc) == T ~ "Pass",
+                                    grepl("scrambles", desc) == T ~ "Pass",
+                                    grepl("sacked", desc) == T ~ "Pass",
+                                    TRUE ~ "Run")) %>%
+  group_by(play_call_type) %>%
+  summarize(n = n()) %>%
+  ungroup()
+
+pbp_trim <- pbp_trim %>%
+  mutate(percent = (n/sum(pbp_trim$n)) * 100)
+
+nfl_pass_prop <- pbp_trim %>%
+  filter(play_call_type == "Pass") %>%
+  pull(percent) %>%
+  round(1)
+nfl_run_prop <- pbp_trim %>%
+  filter(play_call_type == "Run") %>%
+  pull(percent) %>%
+  round(1)
+
+nfl_pass <- pbp_trim %>%
+  filter(play_call_type == "Pass") %>%
+  pull(n)
+nfl_run <- pbp_trim %>%
+  filter(play_call_type == "Run") %>%
+  pull(n)
+
+nfl_pass_holds <- sum(commit_wide$pass_commit)
+nfl_run_holds <- sum(commit_wide$run_commit)
+
+nfl_prop_pass_hold <- round((nfl_pass_holds/nfl_pass) * 100,
+                            1)
+nfl_prop_run_hold <- round((nfl_run_holds/nfl_run) * 100,
+                           1)
+
+```
+
+### League Wide Play Call Breakdown
+
+The majority of play calls in the 2021 season were passes.  For all offensive snaps across the NFL,
+
+* `r nfl_pass_prop` percent of offensive snaps were pass play calls.
+* `r nfl_run_prop` percent were runs.
+
+Overall, more holds occurred on pass play calls.
+
+* `r nfl_pass_holds` holds were committed on pass play calls
+* `r nfl_run_holds` holds were committed on run play calls.
+
+On a per snap basis, however, run plays were more likely to result in an offensive holding. For all offensive snaps across the NFL,
+
+* `r nfl_prop_pass_hold` percent of pass play calls resulted in a hold.
+* `r nfl_prop_run_hold` percent of run play calls resulted in a hold.
 
 ## 2021 Offensive Holding Stats
 
