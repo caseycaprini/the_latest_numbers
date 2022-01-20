@@ -38,13 +38,19 @@ pbp_df <- load_pbp(year) %>%
 trim_df <- pbp_df %>%
   filter(two_point_attempt != 1) %>%
   filter(grepl("pass", desc) == T) %>%
-  filter((grepl("Defensive Pass Interference", desc) == T) |
-           (grepl("Illegal Contact", desc) == T) |
-           (grepl("Defensive Holding", desc) == T)) %>%
+  filter((grepl("Defensive Pass Interference", desc,
+                ignore.case = T) == T) |
+           (grepl("Illegal Contact", desc,
+                  ignore.case = T) == T) |
+           (grepl("Defensive Holding", desc,
+                  ignore.case = T) == T)) %>%
   mutate(def_penalty = case_when(
-    grepl("Defensive Pass Interference", desc) == T ~ "DPI",
-    grepl("Illegal Contact", desc) == T ~ "Illegal Contact",
-    grepl("Defensive Holding", desc) == T ~ "Defensive Holding"
+    grepl("Defensive Pass Interference", desc,
+          ignore.case = T) == T ~ "DPI",
+    grepl("Illegal Contact", desc,
+          ignore.case = T) == T ~ "Illegal Contact",
+    grepl("Defensive Holding", desc,
+          ignore.case = T) == T ~ "Defensive Holding"
   )) %>%
   rename(team = posteam,
          opponent = defteam) %>%
@@ -58,10 +64,11 @@ trim_df <- pbp_df %>%
 
 # Summarize penalties committed by each team
 team_def_pass_commit <- trim_df %>%
-  group_by(team, def_penalty) %>%
+  group_by(opponent, def_penalty) %>%
   summarize(n = n(),
             penalty_yards = sum(penalty_yards, na.rm = T)) %>%
-  ungroup()
+  ungroup() %>%
+  rename(team = opponent)
 team_def_pass_commit_totals <- team_def_pass_commit %>%
   group_by(team) %>%
   summarize(total_def_pass_penalties_commit = sum(n),
@@ -71,11 +78,10 @@ team_def_pass_commit <- left_join(team_def_pass_commit, team_def_pass_commit_tot
 
 # Summarize penalties drawn by each team
 team_def_pass_drawn <- trim_df %>%
-  group_by(opponent, def_penalty) %>%
+  group_by(team, def_penalty) %>%
   summarize(n = n(),
             penalty_yards = sum(penalty_yards, na.rm = T)) %>%
-  ungroup() %>%
-  rename(team = opponent)
+  ungroup()
 team_def_pass_drawn_totals <- team_def_pass_drawn %>%
   group_by(team) %>%
   summarize(total_def_pass_penalties_drawn = sum(n),
