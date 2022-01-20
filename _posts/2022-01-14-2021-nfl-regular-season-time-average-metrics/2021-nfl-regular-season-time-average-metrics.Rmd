@@ -51,6 +51,9 @@ df <- df %>%
               select(team, record, avg_point_diff),
             by = c("team" = "team"))
 
+write.csv(df,
+          "nfl_2021_time_average_metrics.csv")
+
 df <- teams_colors_logos %>%
   select(team_logo_espn,
          team_abbr) %>%
@@ -207,32 +210,49 @@ df %>%
   select(-c(metal_mad, maple_mad)) %>%
   reactable(
     theme = pff(),
+    height = 800,
     defaultColDef = colDef(align = "center",
                            format = colFormat(digits = 1)),
     columns = list(
       team_logo_espn = colDef(name = " ",
                               sortable = F,
+                              style = list(position = "sticky",
+                                           left = 0,
+                                           background = "#fff",
+                                           zIndex = 1),
                               cell = embed_img(),
                               width = 40),
       team = colDef(name = "Team",
-                    width = 70),
+                    width = 70,
+                    style = list(position = "sticky",
+                                 left = 40,
+                                 background = "#fff",
+                                 zIndex = 1)),
       metal = colDef(name = "METAL"),
       metal_plus = colDef(name = "METAL+"),
       tal = colDef(name = "TAL"),
       sos = colDef(name = "SOS"),
       tale = colDef(name = "TALE"),
       maple = colDef(name = "MAPLE"),
-      maple_plus = colDef(name = "MAPLE+"),
-      record = colDef(name = "Record",
-                      sortable = F),
-      avg_point_diff = colDef(name = "MoV",
-                              format = colFormat(digits = 1))
+      maple_plus = colDef(name = "MAPLE+")
     ),
+    columnGroups = list(
+      colGroup(name = "Median (Points)",
+               columns = c("metal",
+                           "metal_plus")),
+      colGroup(name = "Average (Points)",
+               columns = c("tal",
+                           "sos",
+                           "tale")),
+      colGroup(name = "Median (Possessions)",
+               columns = c("maple",
+                           "maple_plus"))
+      ),
     pagination = F,
     highlight = T,
-    #style = list(borderRight = "1px solid #eee"),
     bordered = T,
-    defaultSorted = c("metal")
+    defaultSorted = c("metal"),
+    defaultSortOrder = "desc"
   )
 
 ```
@@ -241,7 +261,7 @@ df %>%
 
 Abbreviations used in table:
 
-* <b>METAL</b>: <u>ME</u>dian <u>T</u>ime <u>A</u>verage <u>L</u>ead.
+* <b>METAL</b>: <u>ME</u>dian <u>T</u>ime <u>A</u>verage <u>L</u>ead
   * The median of a team's individual game time average leads.
   * Units: Points
 * <b>METAL+</b>
@@ -254,7 +274,7 @@ Abbreviations used in table:
 * <b>SoS</b>: <u>S</u>trength <u>o</u>f <u>S</u>chedule
   * Opponent quality adjustment based on opponents' average TAL of opponents time average lead
   * Does not consider games against team of interest
-    * E.g., SOS calculation for HOU does not include the games played against HOU
+    * E.g., SoS calculation for HOU does not include the games played against HOU
   * Units: Points
 * <b>TALE</b>: <u>T</u>ime <u>A</u>verage <u>L</u>ead <u>E</u>valuation
   * Season time average lead with adjustment for opponent quality
@@ -266,6 +286,3 @@ Abbreviations used in table:
 * <b>MAPLE+</b>
   * Team's MAPLE plus one (unscaled) median absolute deviation
   * Units: Possessions
-* <b>MOV</b>: <u>.M</u>argin <u>o</u>f <u>V</u>ictory (convention used by [Pro Football Reference](https://www.pro-football-reference.com/years/2021/))
-  * Aggregate point differential for team, on per game basis
-  * MoV = (Season Points Scored - Season Points Allowed)/Games Played

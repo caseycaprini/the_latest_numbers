@@ -1,9 +1,0 @@
-"0","ggsave(filename = ""nfl_2021_def_pass_penalties_commit.png"",
-       plot = p_commit,
-       width = 5,
-       height = 5.25,
-       units = ""in"",
-       dpi = ""retina"")
-"
-"2","Error in FUN(X[[i]], ...) : object 'total_holds' not found
-"

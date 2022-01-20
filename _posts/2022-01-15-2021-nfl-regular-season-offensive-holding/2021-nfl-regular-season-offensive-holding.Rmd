@@ -79,6 +79,9 @@ team_net_holds <- team_off_hold_drawn_totals %>%
   rename(total_holds_committed = total_holds) %>%
   mutate(net_holds = total_holds_drawn - total_holds_committed)
 
+write.csv(team_net_holds,
+          "nfl_2021_off_holding.csv")
+
 ```
 
 
@@ -205,16 +208,23 @@ library(reactablefmtr)
 table_df %>%
   reactable(
     theme = pff(),
+    height = 800,
     defaultColDef = colDef(align = "center"),
     columns = list(
       team_logo_espn = colDef(name = " ",
                               sortable = F,
                               style = list(position = "sticky",
-                                           left = 0),
+                                           left = 0,
+                                           background = "#fff",
+                                           zIndex = 1),
                               cell = embed_img(),
                               width = 40),
       team = colDef(name = "Team",
-                    width = 70),
+                    width = 70,
+                    style = list(position = "sticky",
+                                 left = 40,
+                                 background = "#fff",
+                                 zIndex = 1)),
       pass_commit = colDef(name = "Pass"),
       run_commit = colDef(name = "Run"),
       total_commit = colDef(name = "Total"),
@@ -243,7 +253,8 @@ table_df %>%
     highlight = T,
     #style = list(borderRight = "1px solid #eee"),
     bordered = T,
-    defaultSorted = c("total_net")
+    defaultSorted = c("total_net"),
+    defaultSortOrder = "desc"
   )
 
 ```

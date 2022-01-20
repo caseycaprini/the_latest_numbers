@@ -90,6 +90,9 @@ team_net_def_pass <- team_def_pass_drawn_totals %>%
   mutate(net_def_pass_penalties = total_def_pass_penalties_drawn - total_def_pass_penalties_commit,
          net_def_pass_penalty_yards = total_def_pass_penalty_yards_drawn - total_def_pass_penalty_yards_commit)
 
+write.csv(team_net_def_pass,
+          "nfl_2021_def_pass_penalties.csv")
+
 ```
 
 ```{r table_prep, include=FALSE}
@@ -134,6 +137,11 @@ table_df <- teams_colors_logos %>%
 
 ```
 
+## Intro
+
+The following is a collection of defensive pass game penalty statistics for the 2021 NFL regular season, derived from nflfastR play-by-play data.
+
+Here, "defensive pass" penalties include (1) defensive pass interference (DPI), (2) defensive holding, and (3) illegal contact penalties. These are all high leverage penalties that result in an automatic first down. DPIs often provide the offense with significant yardage.
 
 ## 2021 Defensive Pass Penalty Stats
 
@@ -143,15 +151,22 @@ table_df %>%
   reactable(
     theme = pff(),
     defaultColDef = colDef(align = "center"),
+    height = 800,
     columns = list(
       team_logo_espn = colDef(name = " ",
                               sortable = F,
                               style = list(position = "sticky",
-                                           left = 0),
+                                           left = 0,
+                                           background = "#fff",
+                                           zIndex = 1),
                               cell = embed_img(),
                               width = 40),
       team = colDef(name = "Team",
-                    width = 70),
+                    width = 70,
+                    style = list(position = "sticky",
+                                 left = 40,
+                                 background = "#fff",
+                                 zIndex = 1)),
       dpi_commit = colDef(name = "DPI"),
       def_holding_commit = colDef(name = "Def Hold"),
       ill_contact_commit = colDef(name = "Ill Cont"),
