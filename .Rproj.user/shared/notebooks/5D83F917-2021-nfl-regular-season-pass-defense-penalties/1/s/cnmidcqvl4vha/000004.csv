@@ -1,0 +1,12 @@
+"0","table_df <- teams_colors_logos %>%
+  select(team_logo_espn, team_abbr) %>%
+  left_join(table_df,
+            by = c(""team_abbr"" = ""team"")) %>%
+  rename(team = team_abbr) %>%
+  filter(is.na(pass_commit) == F)
+"
+"2","Error: Problem with `filter()` input `..1`.
+[31mx[39m object 'pass_commit' not found
+[34mi[39m Input `..1` is `is.na(pass_commit) == F`.
+[90mRun `rlang::last_error()` to see where the error occurred.[39m
+"

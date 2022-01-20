@@ -209,6 +209,8 @@ table_df %>%
     columns = list(
       team_logo_espn = colDef(name = " ",
                               sortable = F,
+                              style = list(position = "sticky",
+                                           left = 0),
                               cell = embed_img(),
                               width = 40),
       team = colDef(name = "Team",
