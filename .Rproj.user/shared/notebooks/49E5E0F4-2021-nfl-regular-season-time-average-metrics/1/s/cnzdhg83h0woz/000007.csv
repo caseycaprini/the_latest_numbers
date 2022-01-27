@@ -1,0 +1,36 @@
+"0","df %>%
+  ggplot(aes(x = reorder(factor(team),
+                         tale)),
+             y = tale) +
+  geom_col(aes(fill = team,
+               color = team),
+           width = 0.4) +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.04,
+                 alpha = 0.9) +
+  labs(title = ""2021 Time Average Lead Evaluation"",
+       subtitle = ""Season Time Average Lead with Opponent Adjustment"",
+       x = ""TALE (Points)"",
+       y = NULL,
+       caption = ""Data via nflfastR. Plot via nflplotR."") +
+  theme_light() +
+  scale_y_continuous(breaks = seq(from = -30, to = 30, by = 3),
+                     minor_breaks = NULL) +
+  scale_x_discrete(labels = NULL,
+                   breaks = NULL) +
+  scale_fill_nfl() +
+  scale_color_nfl(type = ""secondary"") +
+  coord_flip()
+"
+"1","[1m[33mError[39m in [38;5;232m[38;5;235m[48;5;253m`check_required_aesthetics()`[49m[38;5;232m[39m:[22m
+[33m![39m geom_col requires the following missing aesthetics: y
+Backtrace:
+[90m 1. [39m[1mbase[22m `<fn>`(x)
+[90m 2. [39mggplot2:::print.ggplot(x)
+[90m 4. [39mggplot2:::ggplot_build.ggplot(x)
+[90m 5. [39mggplot2 by_layer(function(l, d) l$compute_geom_1(d))
+[90m 6. [39mggplot2 f(l = layers[[i]], d = data[[i]])
+[90m 7. [39ml$compute_geom_1(d)
+[90m 8. [39mggplot2 f(..., self = self)
+[90m 9. [39mggplot2:::check_required_aesthetics(...)
+"

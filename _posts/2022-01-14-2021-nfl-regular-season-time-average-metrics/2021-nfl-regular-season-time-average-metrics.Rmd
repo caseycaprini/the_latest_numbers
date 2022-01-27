@@ -12,13 +12,18 @@ output:
 ---
 
 
-```{r setup, include=FALSE}
+```{r libraries, include=FALSE}
+
 library(tidyverse)
 library(nflfastR)
 library(nfltools)
 library(reactable)
 library(reactablefmtr)
 library(nflplotR)
+
+```
+
+```{r get_data, include=FALSE}
 
 weekly_2021 <- nfl_mvt_season(year = 2021)
 season_summary_2021 <- nfl_mvt_season_summary(weekly_2021)
@@ -28,18 +33,16 @@ df <- weekly_2021 %>%
   group_by(team) %>%
   summarize(metal = median(mean_point_diff),
             tal = mean(mean_point_diff),
-            metal_mad = mad(mean_point_diff, constant = 1),
             maple = median(mean_possession_diff),
-            maple_mad = mad(mean_possession_diff, constant = 1))
+            weekly_tal = list(mean_point_diff)
+            )
 
 df <- df %>%
   left_join(season_summary_2021 %>%
               select(team, opp_mean_point_diff),
             by = c("team" = "team")) %>%
   rename(sos = opp_mean_point_diff) %>%
-  mutate(tale = tal + sos,
-         metal_plus = metal + metal_mad,
-         maple_plus = maple + maple_mad)
+  mutate(tale = tal + sos)
 
 results_summary <- nfl_reg_season_summary(year = 2021) %>%
   mutate(games_played = wins + losses + ties) %>%
@@ -51,24 +54,22 @@ df <- df %>%
               select(team, record, avg_point_diff),
             by = c("team" = "team"))
 
-write.csv(df,
+write.csv(df %>% select(-weekly_tal),
           "nfl_2021_time_average_metrics.csv")
 
+# Add team logos/color to data frame for use in table
 df <- teams_colors_logos %>%
   select(team_logo_espn,
-         team_abbr) %>%
+         team_abbr,
+         team_color) %>%
   left_join(df,
             by = c("team_abbr" = "team")) %>%
   rename(team = team_abbr) %>%
-  filter(is.na(metal) == F)
-
-df <- df %>%
-  select(team_logo_espn, team,
-         metal, metal_mad, metal_plus,
-         tal, sos, tale,
-         maple, maple_mad, maple_plus)
+  filter(is.na(metal) == F) #Remove rows for old team names
 
 ```
+
+<i>Table and graphics updated 01/27/2022.</i>
 
 ## Intro
 
@@ -82,7 +83,7 @@ For an introduction to time averages, check [this](https://caseycaprini.github.i
 
 ### Point Differential Summaries
 
-```{r graph, echo=FALSE}
+```{r tiers_plot, echo=FALSE}
 
 p_tiers <- df %>%
   ggplot(aes(x = tal, y = metal)) +
@@ -104,7 +105,7 @@ p_tiers <- df %>%
        subtitle = "Unadjusted Summary Statistics",
        x = "Average Time Avg Lead (Points)",
        y = "Median Time Avg Lead (Points)",
-       caption = "Data via nflfastR. Plot via nflplotR.") -> p_1
+       caption = "Data via nflfastR. Plot via nflplotR.")
 
 ggsave(filename = "2021_tier_plot.png",
        plot = p_tiers,
@@ -112,43 +113,38 @@ ggsave(filename = "2021_tier_plot.png",
        width = 5,
        units = "in",
        dpi = "retina")
+
 ```
 
 ![](2021_tier_plot.png)
 
-```{r echo=FALSE}
+```{r tale_plot, echo=FALSE}
 
-p_metal_plus <- df %>%
-  ggplot(aes(x = metal,
-             y = reorder(factor(team),
-                         metal_plus))) +
-  geom_linerange(aes(xmin = metal - metal_mad,
-                     xmax = metal + metal_mad,
-                     color = team)) +
-  geom_point(aes(color = team)) +
-  geom_point(data = weekly_2021,
-             aes(x = mean_point_diff,
-                 y = factor(team),
-                 color = team),
-             shape = "X",
-             alpha = 0.4) +
+p_tale <- df %>%
+  ggplot(aes(x = reorder(factor(team),
+                         tale),
+             y = tale)
+         ) +
+  geom_col(aes(fill = team),
+           width = 0.4) +
   geom_nfl_logos(aes(team_abbr = team),
-                 width = 0.04,
-                 alpha = 0.9) +
-  labs(title = "2021 Time Average Lead Distribution",
-       subtitle = "Median Time Average Lead +/- 1 MAD",
-       x = "Time Average Lead (Points)",
-       y = NULL,
+                 width = 0.04) +
+  labs(title = "2021 Time Average Lead Evaluation",
+       subtitle = "Season Time Average Lead with Opponent Adjustment",
+       y = "TALE (Points)",
+       x = NULL,
        caption = "Data via nflfastR. Plot via nflplotR.") +
   theme_light() +
-  scale_x_continuous(breaks = seq(from = -30, to = 30, by = 6),
+  scale_y_continuous(breaks = seq(from = -30, to = 30, by = 3),
                      minor_breaks = NULL) +
-  scale_y_discrete(labels = NULL,
+  scale_x_discrete(labels = NULL,
                    breaks = NULL) +
-  scale_color_nfl()
+  scale_fill_nfl() +
+  coord_flip()
+  
 
-ggsave(filename = "2021_metal_plus_plot.png",
-       plot = p_metal_plus,
+ggsave(filename = "2021_tale_plot.png",
+       plot = p_tale,
        height = 5.25,
        width = 5,
        units = "in",
@@ -156,62 +152,22 @@ ggsave(filename = "2021_metal_plus_plot.png",
 
 ```
 
-![](2021_metal_plus_plot.png)
+![](2021_tale_plot.png)
 
-### (Time Average) Possession Differential
-
-```{r echo=FALSE}
-
-p_maple_plus <- df %>%
-  ggplot(aes(x = maple,
-             y = reorder(factor(team),
-                         maple_plus))) +
-  geom_linerange(aes(xmin = maple - maple_mad,
-                     xmax = maple + maple_mad,
-                     color = team)) +
-  geom_point(aes(color = team)) +
-  geom_point(data = weekly_2021,
-             aes(x = mean_possession_diff,
-                 y = factor(team),
-                 color = team),
-             alpha = 0.4,
-             shape = "X") +
-  geom_nfl_logos(aes(team_abbr = team),
-                 width = 0.04,
-                 alpha = 0.8) +
-  labs(title = "2021 Time Average Lead Distribution",
-       subtitle = "Median Average Possession Lead +/- 1 MAD",
-       x = "Time Average Lead (Possessions)",
-       y = NULL,
-       caption = "Data via nflfastR. Plot via nflplotR.") +
-  theme_light() +
-  scale_x_continuous(minor_breaks = NULL) +
-  scale_y_discrete(labels = NULL,
-                   breaks = NULL) +
-  scale_color_nfl()
-
-ggsave(filename = "2021_maple_plus_plot.png",
-       plot = p_maple_plus,
-       height = 5.25,
-       width = 5,
-       units = "in",
-       dpi = "retina")
-
-```
-
-![](2021_maple_plus_plot.png)
-
-
-## Table
+## Interactive Table
 
 ```{r table, echo=FALSE}
 
 df %>%
-  select(-c(metal_mad, maple_mad)) %>%
+  select(team_logo_espn, team, team_color,
+         weekly_tal, tale, tal, sos,
+         metal, maple,
+         record, avg_point_diff) %>%
   reactable(
     theme = pff(),
-    height = 800,
+    height = 675,
     defaultColDef = colDef(align = "center",
+                           vAlign = "center",
                            format = colFormat(digits = 1)),
     columns = list(
       team_logo_espn = colDef(name = " ",
@@ -223,35 +179,56 @@ df %>%
                               cell = embed_img(),
                               width = 40),
       team = colDef(name = "Team",
-                    width = 70,
+                    width = 60,
                     style = list(position = "sticky",
                                  left = 40,
                                  background = "#fff",
                                  zIndex = 1)),
-      metal = colDef(name = "METAL"),
-      metal_plus = colDef(name = "METAL+"),
-      tal = colDef(name = "TAL"),
-      sos = colDef(name = "SOS"),
-      tale = colDef(name = "TALE"),
-      maple = colDef(name = "MAPLE"),
-      maple_plus = colDef(name = "MAPLE+")
+      team_color = colDef(show = FALSE),
+      team_color2 = colDef(show = FALSE),
+      tale = colDef(name = "TALE",
+                    width = 70),
+      tal = colDef(name = "TAL",
+                   width = 70),
+      sos = colDef(name = "SOS",
+                   width = 70),
+      weekly_tal = colDef(name = "Weekly Time Average Lead",
+                          width = 280,
+                          cell = react_sparkbar(
+                            df,
+                            height = 75,
+                            decimals = 1,
+                            fill_color_ref = "team_color",
+                            fill_opacity = 1,
+                            statline = "mean",
+                            statline_color = "black",
+                            statline_label_color = "black"
+                            )
+                          ),
+      metal = colDef(name = "METAL",
+                     width = 70),
+      maple = colDef(name = "MAPLE",
+                     width = 70),
+      avg_point_diff = colDef(name = "MoV",
+                              width = 70)
     ),
     columnGroups = list(
-      colGroup(name = "Median (Points)",
+      colGroup(name = "Averages (Points)",
+               columns = c("weekly_tal",
+                           "tale",
+                           "tal",
+                           "sos")),
+      colGroup(name = "Medians",
                columns = c("metal",
-                           "metal_plus")),
-      colGroup(name = "Average (Points)",
-               columns = c("tal",
-                           "sos",
-                           "tale")),
-      colGroup(name = "Median (Possessions)",
-               columns = c("maple",
-                           "maple_plus"))
+                           "maple")),
+      colGroup(name = "Conventional Stats",
+               columns = c("record",
+                           "avg_point_diff"))
       ),
     pagination = F,
     highlight = T,
     bordered = T,
-    defaultSorted = c("metal"),
+    defaultSorted = c("tale"),
     defaultSortOrder = "desc"
   )
 
@@ -261,28 +238,27 @@ df %>%
 
 Abbreviations used in table:
 
-* <b>METAL</b>: <u>ME</u>dian <u>T</u>ime <u>A</u>verage <u>L</u>ead
-  * The median of a team's individual game time average leads.
-  * Units: Points
-* <b>METAL+</b>
-  * Team's METAL plus one (unscaled) median absolute deviation (MAD)
+* <b>TALE</b>: <u>T</u>ime <u>A</u>verage <u>L</u>ead <u>E</u>valuation
+  * Season time average lead with adjustment for opponent quality
+    * TALE = TAL + SoS
   * Units: Points
 * <b>TAL</b>: <u>T</u>ime <u>A</u>verage <u>L</u>ead
   * Unadjusted time average lead for regulation time of all regular season games.
     * At any give point in regulation of 2021, team __ led by an average of __ points.
-    * Units: Points
+  * Units: Points
 * <b>SoS</b>: <u>S</u>trength <u>o</u>f <u>S</u>chedule
   * Opponent quality adjustment based on opponents' average TAL of opponents time average lead
   * Does not consider games against team of interest
-    * E.g., SoS calculation for HOU does not include the games played against HOU
+    * For example, SoS calculation for HOU does not include the games HOU's opponents played against HOU
   * Units: Points
-* <b>TALE</b>: <u>T</u>ime <u>A</u>verage <u>L</u>ead <u>E</u>valuation
-  * Season time average lead with adjustment for opponent quality
-  * TALE = TAL + SoS
+* <b>METAL</b>: <u>ME</u>dian <u>T</u>ime <u>A</u>verage <u>L</u>ead
+  * The median of individual game time average leads for season.
+  * Units: Points
 * <b>MAPLE</b>: <u>M</u>edain <u>A</u>verage <u>P</u>ossession <u>LE</u>ad
   * The median of team's individual game time average leads in possessions.
     * For example, lead by 9 points -> +2 possession lead (lead, 2 score game).
   * Units: Possessions
-* <b>MAPLE+</b>
-  * Team's MAPLE plus one (unscaled) median absolute deviation
-  * Units: Possessions
+* <b>MoV</b>: <u>M</u>argin <u>o</u>f <u>V</u>ictory
+  * Aggregate point differential for team, on per game basis
+    * MoV = (Season Points Scored - Season Points Allowed)/Games Played
+  * Units: Points
