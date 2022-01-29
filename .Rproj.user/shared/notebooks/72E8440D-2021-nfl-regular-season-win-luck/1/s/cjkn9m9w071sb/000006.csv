@@ -1,9 +1,0 @@
-"0","ggsave(filename = ""nfl_2021_time_avg_exp_wins.png"",
-       plot = p_exp_wins,
-       height = 5.25,
-       width = 5,
-       units = ""in"",
-       dpi = ""retina"")
-"
-"2","Error: Discrete value supplied to continuous scale
-"

@@ -1,0 +1,11 @@
+"0","knitr::kable(luckiest_wins,"
+"0","             format = ""html"","
+"0","             digits = 1,"
+"0","             col.names = c(""Wk"","
+"0","                           ""Team"","
+"0","                           ""Opponent"","
+"0","                           ""Time Avg Lead (Points)"","
+"0","                           ""Avg Win Percentage (%)""))"
+"2","Error in knitr::kable(luckiest_wins, format = ""html"", digits = 1, col.names = c(""Wk"",  : 
+  object 'luckiest_wins' not found
+"

@@ -21,6 +21,11 @@
 "0","# Load 2021 time average results by week"
 "0","# Add model predicted win percentage for each game played"
 "0","df_weekly = nfl_mvt_season(2021)"
+"2","Note: nflreadr caches (i.e., stores a saved version) data by default.
+If you expect different output try one of the following:
+[34mi[39m Restart your R Session or
+[34mi[39m Run `nflreadr::.clear_cache()`.
+To disable this warning, run `options(nflreadr.cache_warning = FALSE)`"
 "0","df_weekly = df_weekly %>%"
 "0","  rename(tal = mean_point_diff) %>%"
 "0","  mutate(exp_wins = ifelse(home_away == ""home"","
