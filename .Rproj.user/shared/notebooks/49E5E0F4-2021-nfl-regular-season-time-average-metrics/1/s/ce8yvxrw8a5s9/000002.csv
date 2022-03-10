@@ -1,49 +1,10 @@
-"0",""
-"0","weekly_2021 <- nfl_mvt_season(year = 2021)"
-"2","Note: nflreadr caches (i.e., stores a saved version) data by default.
-If you expect different output try one of the following:
-[34mi[39m Restart your R Session or
-[34mi[39m Run `nflreadr::.clear_cache()`.
-To disable this warning, run `options(nflreadr.cache_warning = FALSE)`"
-"0","season_summary_2021 <- nfl_mvt_season_summary(weekly_2021)"
-"0",""
-"0","df <- weekly_2021 %>%"
-"0","  filter(is.na(home_away) == FALSE) %>%"
-"0","  group_by(team) %>%"
-"0","  summarize(metal = median(mean_point_diff),"
-"0","            tal = mean(mean_point_diff),"
-"0","            maple = median(mean_possession_diff),"
-"0","            weekly_tal = list(mean_point_diff)"
-"0","            )"
-"0",""
-"0","df <- df %>%"
-"0","  left_join(season_summary_2021 %>%"
-"0","              select(team, opp_mean_point_diff),"
-"0","            by = c(""team"" = ""team"")) %>%"
-"0","  rename(sos = opp_mean_point_diff) %>%"
-"0","  mutate(tale = tal + sos)"
-"0",""
-"0","results_summary <- nfl_reg_season_summary(year = 2021) %>%"
-"0","  mutate(games_played = wins + losses + ties) %>%"
-"0","  unite(""record"", wins:ties, sep = ""-"") %>%"
-"0","  mutate(avg_point_diff = season_point_diff/games_played)"
-"0",""
-"0","df <- df %>%"
-"0","  left_join(results_summary %>%"
-"0","              select(team, record, avg_point_diff),"
-"0","            by = c(""team"" = ""team""))"
-"0",""
-"0","write.csv(df %>% select(-weekly_tal),"
-"0","          ""nfl_2021_time_average_metrics.csv"")"
-"0",""
-"0","# Add team logos/color to data frame for use in table"
-"0","df <- teams_colors_logos %>%"
-"0","  select(team_logo_espn,"
-"0","         team_abbr,"
-"0","         team_color,"
-"0","         team_color2) %>%"
-"0","  left_join(df,"
-"0","            by = c(""team_abbr"" = ""team"")) %>%"
-"0","  rename(team = team_abbr) %>%"
-"0","  filter(is.na(metal) == F) #Remove rows for old team names"
-"0",""
+"0","df <- weekly_2021 %>%
+  filter(is.na(home_away) == FALSE) %>%
+  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  group_by(team) %>%
+  summarize(metal = median(time_avg_lead),
+            weekly_avg_win_perc = list(avg_win_perc))
+"
+"2","Error in filter(., is.na(home_away) == FALSE) : 
+  object 'weekly_2021' not found
+"

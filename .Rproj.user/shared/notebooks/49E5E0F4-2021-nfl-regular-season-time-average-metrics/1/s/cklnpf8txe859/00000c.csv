@@ -1,0 +1,10 @@
+"0","ggsave(filename = ""2021_win_plot.png"",
+       plot = p_win,
+       height = 5.25,
+       width = 5,
+       units = ""in"",
+       dpi = ""retina"")
+"
+"2","Error in get(as.character(FUN), mode = ""function"", envir = envir) : 
+  object 'FUN' of mode 'function' was not found
+"
