@@ -1,0 +1,8 @@
+"0","df_mod <- data.frame(
+  time_avg_lead = seq(-30, 30, 0.05),
+  avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))
+)
+"
+"2","Error in data.frame(time_avg_lead = seq(-30, 30, 0.05), avg_win_perc = exp(0.3058 *  : 
+  object 'time_avg_lead' not found
+"
