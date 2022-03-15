@@ -45,7 +45,7 @@ For a given team in a given season,
 pit_2021 <- nfltools::nfl_mvt_season(year = 2021) %>%
   filter(is.na(home_away) == FALSE) %>%
   filter(team == "PIT") %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead)))
+  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead)))
 
 pit_2021_sim <- replicate(
   10000,
@@ -145,7 +145,7 @@ To start, I use a function in my hacky package nfltools to calculate the time av
 
 Based on the time average lead, an expected win probability is calculated for each week using the following equation.
 
-$$E[Win Prob|Time Avg Lead] = \frac{e^{0.3058(Time Avg Lead)}}{1 + e^{0.3058(Time Avg Lead)}}$$
+$$E[Win Prob|Time Avg Lead] = \frac{e^{0.31(Time Avg Lead)}}{1 + e^{0.31(Time Avg Lead)}}$$
 
 The weekly results are presented in the following table.
 
@@ -227,7 +227,7 @@ year_i = 2021
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -291,7 +291,7 @@ year_i = 2020
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -355,7 +355,7 @@ year_i = 2019
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -419,7 +419,7 @@ year_i = 2018
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -483,7 +483,7 @@ year_i = 2017
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -547,7 +547,7 @@ year_i = 2016
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
@@ -611,7 +611,7 @@ year_i = 2015
 
 df <- nfltools::nfl_mvt_season(year = year_i) %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(weekly_avg_win_perc = list(avg_win_perc))
 
