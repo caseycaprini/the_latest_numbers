@@ -30,7 +30,7 @@ season_summary_2021 <- nfl_mvt_season_summary(weekly_2021)
 
 df <- weekly_2021 %>%
   filter(is.na(home_away) == FALSE) %>%
-  mutate(avg_win_perc = exp(0.3058 * time_avg_lead)/(1 + exp(0.3058 * time_avg_lead))) %>%
+  mutate(avg_win_perc = exp(0.31 * time_avg_lead)/(1 + exp(0.31 * time_avg_lead))) %>%
   group_by(team) %>%
   summarize(metal = median(time_avg_lead),
             weekly_avg_win_perc = list(avg_win_perc))
@@ -191,11 +191,13 @@ act_wins <- nfl_reg_season_summary(year = 2021) %>%
 
 df_wins <- left_join(df_wins,
                      act_wins,
-                     by = c("team" = "team"))
+                     by = c("team" = "team")) %>%
+  arrange(w_50_perc, w_25_perc, w_05_perc, w_75_perc, w_95_perc, wins) %>%
+  mutate(rank = row_number())
 
 p_win <- df_wins %>%
   ggplot(aes(x = reorder(factor(team),
-                         w_50_perc),
+                         rank),
              y = w_50_perc)) +
   geom_hline(yintercept = 8.5,
              color = "red") +
