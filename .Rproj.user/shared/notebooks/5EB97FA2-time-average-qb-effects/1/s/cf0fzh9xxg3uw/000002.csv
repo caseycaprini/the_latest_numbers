@@ -1,0 +1,21 @@
+"0","qb_snaps <- nflreadr::load_snap_counts(2014:2020) %>%
+  filter(game_type == ""REG"") %>%
+  filter(position == ""QB"") %>%
+  mutate(team = case_when(team == ""SD"" ~ ""LAC"",
+                          team == ""OAK"" ~ ""LV"",
+                          team == ""STL"" ~ ""LA"",
+                          TRUE ~ team),
+         opponent = case_when(opponent == ""SD"" ~ ""LAC"",
+                              opponent == ""OAK"" ~ ""LV"",
+                              opponent == ""STL"" ~ ""LA"",
+                              TRUE ~ opponent)) %>%
+  group_by(season, game_id, team, opponent) %>%
+  filter(offense_pct == max(offense_pct)) %>%
+  summarize(qb_snap_pct = offense_pct,
+            pfr_player_id = pfr_player_id) %>%
+  left_join(qb_tiers %>%
+              select(year, pfr_player_id, qb_tier_avg),
+            by = c(""season"" = ""year"",
+                   ""pfr_player_id"" = ""pfr_player_id""))
+"
+"2","`summarise()` has grouped output by 'season', 'game_id', 'team', 'opponent'. You can override using the `.groups` argument."

@@ -1,0 +1,205 @@
+---
+title: "QB Quality Effects on Time Average Evaluations"
+description: |
+  Exploring Mike Sando's QB Tiers and Time Average Win Residuals.
+author:
+  - name: Casey Caprini
+date: 2022-03-17
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries, include=FALSE}
+
+library(tidyverse)
+library(nflreadr)
+library(nflfastR)
+library(nflplotR)
+library(nfltools)
+
+```
+
+```{r get_qb_pfr_ids, include=FALSE}
+
+qb_pfr_ids <- nflreadr::load_snap_counts(2014:2021) %>%
+  filter(game_type == "REG") %>%
+  filter(position == "QB") %>%
+  select(player, pfr_player_id) %>%
+  distinct()
+
+```
+
+```{r get_qb_tiers, include=FALSE}
+
+# If NA, replace starter with 4.  Else 4.5.
+qb_tiers <- readr::read_csv("qb_tiers_2014_2021.csv") %>%
+  # If NA, replace starter with 4; else, replace with 4.5
+  mutate(qb_tier = ifelse(is.na(qb_tier) == T,
+                          ifelse(expected_starter == T,
+                                 4,
+                                 4.5),
+                          qb_tier),
+         qb_tier_avg = ifelse(is.na(qb_tier_avg) == T,
+                              ifelse(expected_starter == T,
+                                     4,
+                                     4.5),
+                              qb_tier_avg)
+         ) %>%
+  mutate(qb_name = ifelse(is.na(qb_name_suffix) == T,
+                          paste0(qb_name_first, " ", qb_name_last),
+                          paste(qb_name_first, qb_name_last, qb_name_suffix))
+         ) %>%
+  mutate(year = year - 1) %>%
+  left_join(qb_pfr_ids,
+            by = c("qb_name" = "player"))
+
+```
+
+
+```{r get_snap_counts, include=FALSE}
+
+qb_snaps <- nflreadr::load_snap_counts(2014:2020) %>%
+  filter(game_type == "REG") %>%
+  filter(position == "QB") %>%
+  mutate(team = case_when(team == "SD" ~ "LAC",
+                          team == "OAK" ~ "LV",
+                          team == "STL" ~ "LA",
+                          TRUE ~ team),
+         opponent = case_when(opponent == "SD" ~ "LAC",
+                              opponent == "OAK" ~ "LV",
+                              opponent == "STL" ~ "LA",
+                              TRUE ~ opponent)) %>%
+  group_by(season, game_id, team, opponent) %>%
+  filter(offense_pct == max(offense_pct)) %>%
+  summarize(qb_snap_pct = offense_pct,
+            pfr_player_id = pfr_player_id) %>%
+  left_join(qb_tiers %>%
+              select(year, pfr_player_id, qb_tier_avg),
+            by = c("season" = "year",
+                   "pfr_player_id" = "pfr_player_id"))
+
+valid_game_ids <- qb_snaps %>%
+  group_by(game_id) %>%
+  summarize(qb_tier_avg = max(qb_tier_avg)) %>%
+  filter(is.na(qb_tier_avg) == F) %>%
+  pull(game_id)
+
+qb_snaps <- qb_snaps %>%
+  filter(game_id %in% valid_game_ids) %>%
+  separate(game_id, into = c("season_temp",
+                             "week",
+                             "home_temp",
+                             "away_temp")) %>%
+  mutate(season_temp = NULL,
+         home_temp = NULL,
+         away_temp = NULL)
+
+```
+
+
+```{r get_time_avg_leads, include=FALSE}
+
+tal_df <- lapply(2014:2020,
+                 nfltools::nfl_mvt_season) %>%
+  bind_rows() %>%
+  filter(is.na(time_avg_lead) == F)
+
+win_df <- lapply(2014:2020,
+                 nfltools::nfl_reg_season_results) %>%
+  bind_rows() %>%
+  mutate(team = case_when(team == "SD" ~ "LAC",
+                          team == "OAK" ~ "LV",
+                          team == "STL" ~ "LA",
+                          TRUE ~ team))
+
+tal_df <- tal_df %>%
+  left_join(win_df %>%
+              select(season, team, week, win),
+            by = c("season", "week", "team")) %>%
+  mutate(week = str_pad(week, width = 2, pad = "0"))
+
+```
+
+
+```{r calc_qb_advantage, include=FALSE}
+
+qb_adv_df <- qb_snaps %>%
+  mutate(qb_adv = NA_real_)
+
+for(i in 1:nrow(qb_adv_df)){
+  qb_adv_df$qb_adv[i] = ifelse(i %% 2 == 1,
+                               qb_adv_df$qb_tier_avg[i + 1] - qb_adv_df$qb_tier_avg[i],
+                               qb_adv_df$qb_tier_avg[i - 1] - qb_adv_df$qb_tier_avg[i])
+}
+
+```
+
+```{r build_df, include=FALSE}
+
+df <- tal_df %>%
+  left_join(qb_adv_df,
+            by = c("season",
+                   "week",
+                   "team",
+                   "opponent")) %>%
+  filter(is.na(qb_adv) == F) %>%
+  mutate(fake_id = ifelse(home_away == "home",
+                          paste(season, week, team, opponent),
+                          paste(season, week, opponent, team)
+                          )
+         )
+
+ids = df %>% distinct(fake_id) %>% pull(fake_id)
+rand_home_away = sample(c("home", "away"),
+                        nrow(df)/2,
+                        replace = TRUE)
+
+train_df <- data.frame(fake_id = ids,
+                       home_away = rand_home_away)
+
+train_df <- train_df %>%
+  left_join(df,
+            by = c("fake_id",
+                   "home_away"))
+
+```
+
+```{r build_model}
+
+m <- glm(win ~ time_avg_lead + qb_adv,
+         family = "binomial",
+         data = train_df)
+
+b_tal <- coef(m)[2]
+b_qb <- coef(m)[3]
+
+df_pred <- train_df %>%
+  mutate(exp_wp = exp((b_tal*time_avg_lead) + (b_qb*qb_adv))) %>%
+  mutate(exp_wp = exp_wp/(1+exp_wp))
+
+df_pred %>%
+  ggplot(aes(x = exp_wp)) +
+  geom_histogram() +
+  facet_wrap(~ win)
+
+df_pred %>%
+  ggplot(aes(x = exp_wp)) +
+  geom_boxplot() +
+  facet_wrap(~ win,
+             ncol = 1) +
+  labs(x = "Expected Win Percentage (%)",
+       y = NULL,
+       title = "Win/Loss ~ Time Avg Lead and QB Advantage",
+       subtitle = "Distribution of Logistic Regression Predictions for Wins/Losses") +
+  scale_y_continuous(breaks = NULL) +
+  scale_x_continuous(minor_breaks = NULL,
+                     labels = scales::percent)
+
+```
+
