@@ -1,24 +1,27 @@
-"0","df <- tal_df %>%
-  left_join(qb_adv_df,
-            by = c(""season"",
-                   ""week"",
-                   ""team"",
-                   ""opponent"")) %>%
-  filter(is.na(qb_adv) == F) %>%
-  filter(fake_id = ifelse(home_away == ""home"",
-                          paste(season, week, team, opponent,
-                                sep = ""_""),
-                          paste(season, week, opponent, team,
-                                sep = ""_"")))
-"
-"1","[1m[33mError[39m in [38;5;232m[38;5;235m[48;5;253m`check_filter()`[49m[38;5;232m[39m:[22m
-[33m![39m Problem with `filter()` input `..1`.
-[31mx[39m Input `..1` is named.
-[34mi[39m This usually means that you've used `=` instead of `==`.
-[34mi[39m Did you mean `fake_id == ifelse(...)`?
-Backtrace:
-[90m 1. [39m... %>% ...
-[90m 3. [39m[1mdplyr[22m:::filter.data.frame(...)
-[90m 4. [39mdplyr:::filter_rows(.data, ..., caller_env = caller_env())
-[90m 5. [39mdplyr:::check_filter(dots)
-"
+"0",""
+"0","df <- tal_df %>%"
+"0","  left_join(qb_adv_df,"
+"0","            by = c(""season"","
+"0","                   ""week"","
+"0","                   ""team"","
+"0","                   ""opponent"")) %>%"
+"0","  filter(is.na(qb_adv) == F) %>%"
+"0","  mutate(fake_id = ifelse(home_away == ""home"","
+"0","                          paste(season, week, team, opponent),"
+"0","                          paste(season, week, opponent, team)"
+"0","                          )"
+"0","         )"
+"0",""
+"0","ids = df %>% distinct(fake_id) %>% pull(fake_id)"
+"0","rand_home_away = sample(c(""home"", ""away""),"
+"0","                        nrow(df)/2,"
+"0","                        replace = TRUE)"
+"0",""
+"0","train_df <- data.frame(fake_id = ids,"
+"0","                       home_away = rand_home_away)"
+"0",""
+"0","train_df <- train_df %>%"
+"0","  left_join(df,"
+"0","            by = c(""fake_id"","
+"0","                   ""home_away""))"
+"0",""

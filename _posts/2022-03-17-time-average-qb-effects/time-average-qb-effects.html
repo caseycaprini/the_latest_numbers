@@ -117,7 +117,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map"]}
+  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","qb_tiers_2014_2022_est.csv","reg_season_2022_forecast.csv","time-average-qb-effects_files/anchor-4.2.2/anchor.min.js","time-average-qb-effects_files/bowser-1.9.3/bowser.min.js","time-average-qb-effects_files/distill-2.2.21/template.v2.js","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png","time-average-qb-effects_files/figure-html5/model_plots-1.png","time-average-qb-effects_files/figure-html5/model_plots-2.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map","time-average-qb-effects_files/popper-2.6.0/popper.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-bundle.umd.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-light-border.css","time-average-qb-effects_files/tippy-6.2.7/tippy.css","time-average-qb-effects_files/tippy-6.2.7/tippy.umd.min.js","time-average-qb-effects_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1483,7 +1483,356 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 <div class="d-article">
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="time-average-qb-effects_files/figure-html5/build_model-1.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/build_model-2.png" width="624" /></p>
+<p><img src="time-average-qb-effects_files/figure-html5/model_plots-1.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/model_plots-2.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+team
+</th>
+<th style="text-align:left;">
+opponent
+</th>
+<th style="text-align:right;">
+tal_adv
+</th>
+<th style="text-align:right;">
+qb_adv
+</th>
+<th style="text-align:right;">
+exp_win_p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+BAL
+</td>
+<td style="text-align:right;">
+-5.5
+</td>
+<td style="text-align:right;">
+-1.2
+</td>
+<td style="text-align:right;">
+11.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+BAL
+</td>
+<td style="text-align:right;">
+-5.5
+</td>
+<td style="text-align:right;">
+-1.2
+</td>
+<td style="text-align:right;">
+11.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CIN
+</td>
+<td style="text-align:right;">
+-4.5
+</td>
+<td style="text-align:right;">
+-1.5
+</td>
+<td style="text-align:right;">
+13.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CIN
+</td>
+<td style="text-align:right;">
+-4.5
+</td>
+<td style="text-align:right;">
+-1.5
+</td>
+<td style="text-align:right;">
+13.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CLE
+</td>
+<td style="text-align:right;">
+-4.5
+</td>
+<td style="text-align:right;">
+-2.0
+</td>
+<td style="text-align:right;">
+11.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CLE
+</td>
+<td style="text-align:right;">
+-2.5
+</td>
+<td style="text-align:right;">
+0.5
+</td>
+<td style="text-align:right;">
+35.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CLE
+</td>
+<td style="text-align:right;">
+-4.5
+</td>
+<td style="text-align:right;">
+-2.0
+</td>
+<td style="text-align:right;">
+11.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CLE
+</td>
+<td style="text-align:right;">
+-2.5
+</td>
+<td style="text-align:right;">
+0.5
+</td>
+<td style="text-align:right;">
+35.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+NE
+</td>
+<td style="text-align:right;">
+-5.0
+</td>
+<td style="text-align:right;">
+-0.2
+</td>
+<td style="text-align:right;">
+16.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+NYJ
+</td>
+<td style="text-align:right;">
+2.5
+</td>
+<td style="text-align:right;">
+0.2
+</td>
+<td style="text-align:right;">
+69.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+LV
+</td>
+<td style="text-align:right;">
+-2.5
+</td>
+<td style="text-align:right;">
+-1.0
+</td>
+<td style="text-align:right;">
+25.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+NO
+</td>
+<td style="text-align:right;">
+-2.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+35.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+TB
+</td>
+<td style="text-align:right;">
+-6.5
+</td>
+<td style="text-align:right;">
+-2.2
+</td>
+<td style="text-align:right;">
+6.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+CAR
+</td>
+<td style="text-align:right;">
+-0.5
+</td>
+<td style="text-align:right;">
+0.5
+</td>
+<td style="text-align:right;">
+50.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+BUF
+</td>
+<td style="text-align:right;">
+-7.8
+</td>
+<td style="text-align:right;">
+-2.2
+</td>
+<td style="text-align:right;">
+4.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+MIA
+</td>
+<td style="text-align:right;">
+-2.5
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+31.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+IND
+</td>
+<td style="text-align:right;">
+-6.5
+</td>
+<td style="text-align:right;">
+-0.8
+</td>
+<td style="text-align:right;">
+9.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+PHI
+</td>
+<td style="text-align:right;">
+-2.5
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+31.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PIT
+</td>
+<td style="text-align:left;">
+ATL
+</td>
+<td style="text-align:right;">
+1.5
+</td>
+<td style="text-align:right;">
+0.2
+</td>
+<td style="text-align:right;">
+63.1
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png" width="624" /></p>
 </div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->

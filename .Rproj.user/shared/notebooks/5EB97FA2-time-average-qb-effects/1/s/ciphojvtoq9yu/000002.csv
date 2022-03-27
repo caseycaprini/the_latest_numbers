@@ -4,8 +4,4 @@
 "0","  filter(position == ""QB"") %>%"
 "0","  select(player, pfr_player_id) %>%"
 "0","  distinct()"
-"2","Note: nflreadr caches (i.e., stores a saved version) data by default.
-If you expect different output try one of the following:
-[34mi[39m Restart your R Session or
-[34mi[39m Run `nflreadr::.clear_cache()`.
-To disable this warning, run `options(nflreadr.verbose = FALSE)` or add it to your .Rprofile"
+"0",""
