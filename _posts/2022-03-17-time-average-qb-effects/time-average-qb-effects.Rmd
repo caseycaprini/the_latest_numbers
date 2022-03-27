@@ -284,9 +284,26 @@ pit_2022 %>%
   mutate(exp_win_p = exp_win_p * 100) %>%
   knitr::kable(digits = 1, format = "html")
 
-sim_wins <- replicate(10000,
-                      sum(rbernoulli(n = length(pit_2022$exp_win_p),p = pit_2022$exp_win_p))
-                      )
+n_sims = 10000
+tal_adv_sim = rep(NA_real_, 17)
+qb_adv_sim = rep(NA_real_, 17)
+exp_win_p_sim = rep(NA_real_, 17)
+sim_wins = rep(NA_real_, n_sims)
+
+for(i in 1:n_sims){
+  tal_adv_sim = rnorm(17,
+                      pit_2022$tal_adv,
+                      0.25)
+  qb_adv_sim = rnorm(17,
+                     pit_2022$tal_adv,
+                     0.15)
+  b_qb_sim = rnorm(1, b_qb, se_qb)
+  b_tal_sim = rnorm(1, b_tal, se_tal)
+  exp_win_p_sim = exp((tal_adv_sim*b_tal_sim) + (qb_adv_sim*b_qb_sim))
+  exp_win_p_sim = exp_win_p_sim/(1 + exp_win_p_sim)
+  sim_wins[i] = sum(rbernoulli(n = 17,
+                                p = exp_win_p_sim))
+}
 
 df <- data.frame(team = "PIT",
                  wins = sim_wins) %>%
@@ -310,7 +327,7 @@ df %>%
              aes(x = p_75)) +
   geom_nfl_logos(aes(team_abbr = team,
                      x = p_50),
-                 width = 0.04) +
+                 width = 0.1) +
   theme_light() +
   labs(x = "Win Total",
        y = NULL,

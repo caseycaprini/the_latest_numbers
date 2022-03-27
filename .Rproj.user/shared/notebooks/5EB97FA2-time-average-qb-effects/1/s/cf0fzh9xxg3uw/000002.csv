@@ -1,24 +1,25 @@
-"0",""
-"0","qb_snaps <- nflreadr::load_snap_counts(2014:2020) %>%"
-"0","  filter(game_type == ""REG"") %>%"
-"0","  filter(position == ""QB"") %>%"
-"0","  mutate(team = case_when(team == ""SD"" ~ ""LAC"","
-"0","                          team == ""OAK"" ~ ""LV"","
-"0","                          team == ""STL"" ~ ""LA"","
-"0","                          TRUE ~ team),"
-"0","         opponent = case_when(opponent == ""SD"" ~ ""LAC"","
-"0","                              opponent == ""OAK"" ~ ""LV"","
-"0","                              opponent == ""STL"" ~ ""LA"","
-"0","                              TRUE ~ opponent)) %>%"
-"0","  group_by(season, game_id, team, opponent) %>%"
-"0","  filter(offense_pct == max(offense_pct)) %>%"
-"0","  summarize(qb_snap_pct = offense_pct,"
-"0","            pfr_player_id = pfr_player_id) %>%"
-"0","  left_join(qb_tiers %>%"
-"0","              select(year, pfr_player_id, qb_tier_avg),"
-"0","            by = c(""season"" = ""year"","
-"0","                   ""pfr_player_id"" = ""pfr_player_id""))"
+"0","qb_snaps <- nflreadr::load_snap_counts(2014:2020) %>%
+  filter(game_type == ""REG"") %>%
+  filter(position == ""QB"") %>%
+  mutate(team = case_when(team == ""SD"" ~ ""LAC"",
+                          team == ""OAK"" ~ ""LV"",
+                          team == ""STL"" ~ ""LA"",
+                          TRUE ~ team),
+         opponent = case_when(opponent == ""SD"" ~ ""LAC"",
+                              opponent == ""OAK"" ~ ""LV"",
+                              opponent == ""STL"" ~ ""LA"",
+                              TRUE ~ opponent)) %>%
+  group_by(season, game_id, team, opponent) %>%
+  filter(offense_pct == max(offense_pct)) %>%
+  summarize(qb_snap_pct = offense_pct,
+            pfr_player_id = pfr_player_id) %>%
+  left_join(qb_tiers %>%
+              select(year, pfr_player_id, qb_tier_avg),
+            by = c(""season"" = ""year"",
+                   ""pfr_player_id"" = ""pfr_player_id""))
+"
 "2","`summarise()` has grouped output by 'season', 'game_id', 'team', 'opponent'. You can override using the `.groups` argument."
+"0",""
 "0","valid_game_ids <- qb_snaps %>%"
 "0","  group_by(game_id) %>%"
 "0","  summarize(qb_tier_avg = max(qb_tier_avg)) %>%"
@@ -34,4 +35,3 @@
 "0","  mutate(season_temp = NULL,"
 "0","         home_temp = NULL,"
 "0","         away_temp = NULL)"
-"0",""
