@@ -1,25 +1,25 @@
-"0","# If NA, replace starter with 4.  Else 4.5.
-qb_tiers <- readr::read_csv(""qb_tiers_2014_2021.csv"") %>%
-  # If NA, replace starter with 4; else, replace with 4.5
-  mutate(qb_tier = ifelse(is.na(qb_tier) == T,
-                          ifelse(expected_starter == T,
-                                 4,
-                                 4.5),
-                          qb_tier),
-         qb_tier_avg = ifelse(is.na(qb_tier_avg) == T,
-                              ifelse(expected_starter == T,
-                                     4,
-                                     4.5),
-                              qb_tier_avg)
-         ) %>%
-  mutate(qb_name = ifelse(is.na(qb_name_suffix) == T,
-                          paste0(qb_name_first, "" "", qb_name_last),
-                          paste(qb_name_first, qb_name_last, qb_name_suffix))
-         ) %>%
-  mutate(year = year - 1) %>%
-  left_join(qb_pfr_ids,
-            by = c(""qb_name"" = ""player""))
-"
+"0",""
+"0","# If NA, replace starter with 4.  Else 4.5."
+"0","qb_tiers <- readr::read_csv(""qb_tiers_2014_2021.csv"") %>%"
+"0","  # If NA, replace starter with 4; else, replace with 4.5"
+"0","  mutate(qb_tier = ifelse(is.na(qb_tier) == T,"
+"0","                          ifelse(expected_starter == T,"
+"0","                                 4,"
+"0","                                 4.5),"
+"0","                          qb_tier),"
+"0","         qb_tier_avg = ifelse(is.na(qb_tier_avg) == T,"
+"0","                              ifelse(expected_starter == T,"
+"0","                                     4,"
+"0","                                     4.5),"
+"0","                              qb_tier_avg)"
+"0","         ) %>%"
+"0","  mutate(qb_name = ifelse(is.na(qb_name_suffix) == T,"
+"0","                          paste0(qb_name_first, "" "", qb_name_last),"
+"0","                          paste(qb_name_first, qb_name_last, qb_name_suffix))"
+"0","         ) %>%"
+"0","  mutate(year = year - 1) %>%"
+"0","  left_join(qb_pfr_ids,"
+"0","            by = c(""qb_name"" = ""player""))"
 "2","[1mRows: [22m[34m271[39m [1mColumns: [22m[34m8[39m"
 "2","[36m--[39m [1mColumn specification[22m [36m-----------------------------------------------------------------------------------------------[39m
 [1mDelimiter:[22m "",""

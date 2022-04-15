@@ -117,7 +117,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","qb_tiers_2014_2022_est.csv","reg_season_2022_forecast.csv","time-average-qb-effects_files/anchor-4.2.2/anchor.min.js","time-average-qb-effects_files/bowser-1.9.3/bowser.min.js","time-average-qb-effects_files/distill-2.2.21/template.v2.js","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png","time-average-qb-effects_files/figure-html5/model_plots-1.png","time-average-qb-effects_files/figure-html5/model_plots-2.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map","time-average-qb-effects_files/popper-2.6.0/popper.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-bundle.umd.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-light-border.css","time-average-qb-effects_files/tippy-6.2.7/tippy.css","time-average-qb-effects_files/tippy-6.2.7/tippy.umd.min.js","time-average-qb-effects_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","qb_tiers_2014_2022_est.csv","reg_season_2022_forecast.csv","tale_qb_tier_ranks_2021.csv","time-average-qb-effects_files/anchor-4.2.2/anchor.min.js","time-average-qb-effects_files/bowser-1.9.3/bowser.min.js","time-average-qb-effects_files/distill-2.2.21/template.v2.js","time-average-qb-effects_files/figure-html5/build_2021_forecast-1.png","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png","time-average-qb-effects_files/figure-html5/model_plots-1.png","time-average-qb-effects_files/figure-html5/model_plots-2.png","time-average-qb-effects_files/figure-html5/tier_predict_2022-1.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map","time-average-qb-effects_files/popper-2.6.0/popper.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-bundle.umd.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-light-border.css","time-average-qb-effects_files/tippy-6.2.7/tippy.css","time-average-qb-effects_files/tippy-6.2.7/tippy.umd.min.js","time-average-qb-effects_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1486,6 +1486,28 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p><img src="time-average-qb-effects_files/figure-html5/model_plots-1.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/model_plots-2.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
+<p><img src="time-average-qb-effects_files/figure-html5/tier_predict_2022-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<table>
+<thead>
+<tr>
+<th style="text-align:right;">
+accuracy
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+62.5
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="time-average-qb-effects_files/figure-html5/build_2021_forecast-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
 <table>
 <thead>
 <tr>
@@ -1521,7 +1543,7 @@ BAL
 -1.2
 </td>
 <td style="text-align:right;">
-18.4
+18.2
 </td>
 </tr>
 <tr>
@@ -1538,7 +1560,7 @@ BAL
 -1.2
 </td>
 <td style="text-align:right;">
-18.4
+18.2
 </td>
 </tr>
 <tr>
@@ -1555,7 +1577,7 @@ CIN
 -1.5
 </td>
 <td style="text-align:right;">
-21.9
+21.7
 </td>
 </tr>
 <tr>
@@ -1572,7 +1594,7 @@ CIN
 -1.5
 </td>
 <td style="text-align:right;">
-21.9
+21.7
 </td>
 </tr>
 <tr>
@@ -1589,7 +1611,7 @@ CLE
 0.5
 </td>
 <td style="text-align:right;">
-50.4
+50.5
 </td>
 </tr>
 <tr>
@@ -1606,7 +1628,7 @@ CLE
 0.5
 </td>
 <td style="text-align:right;">
-50.4
+50.5
 </td>
 </tr>
 <tr>
@@ -1640,7 +1662,7 @@ NYJ
 0.2
 </td>
 <td style="text-align:right;">
-81.1
+81.2
 </td>
 </tr>
 <tr>
@@ -1657,7 +1679,7 @@ LV
 -1.0
 </td>
 <td style="text-align:right;">
-37.9
+37.8
 </td>
 </tr>
 <tr>
@@ -1691,7 +1713,7 @@ TB
 -2.2
 </td>
 <td style="text-align:right;">
-10.6
+10.4
 </td>
 </tr>
 <tr>
@@ -1708,7 +1730,7 @@ CAR
 0.5
 </td>
 <td style="text-align:right;">
-65.2
+65.3
 </td>
 </tr>
 <tr>
@@ -1725,7 +1747,7 @@ BUF
 -2.2
 </td>
 <td style="text-align:right;">
-7.5
+7.4
 </td>
 </tr>
 <tr>
@@ -1759,7 +1781,7 @@ IND
 -0.8
 </td>
 <td style="text-align:right;">
-16.5
+16.3
 </td>
 </tr>
 <tr>

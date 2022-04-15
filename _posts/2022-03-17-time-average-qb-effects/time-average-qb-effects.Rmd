@@ -167,7 +167,11 @@ train_df <- data.frame(fake_id = ids,
 train_df <- train_df %>%
   left_join(df,
             by = c("fake_id",
-                   "home_away"))
+                   "home_away")) %>%
+  mutate(home_away = ifelse(home_away == "away",
+                            0,
+                            1)
+         )
 
 ```
 
@@ -228,10 +232,118 @@ df_train_fit %>%
                      labels = scales::percent) +
   labs(x = "Expected Win Percentage (%)",
        y = "Density",
-       title = "Win ~ Time Avg Lead and QB Advantage",
+       title = "Win ~ Time Avg Lead and QB Tier Advantage",
        subtitle = "Density Plot of Predictions for Training Data")
 
 ```
+
+```{r tier_predict_2022, echo=FALSE}
+
+tal_seq = seq(-10, 10, 0.1)
+qb_seq = seq(-4, 4, 0.1)
+df_pred = expand_grid(tal_seq, qb_seq)
+df_pred = df_pred %>%
+  mutate(exp_wp = exp((b_tal*tal_seq) + (b_qb*qb_seq))) %>%
+  mutate(exp_wp = exp_wp/(1 + exp_wp)) %>%
+  rename(time_avg_lead = tal_seq,
+         qb_adv = qb_seq)
+rm(tal_seq, qb_seq)
+
+df_2021_retro <- readr::read_csv("tale_qb_tier_ranks_2021.csv")
+
+qb_avg_2021 <- df_2021_retro %>%
+  pull(qb_tier_avg) %>%
+  mean()
+
+df_2021_retro <- df_2021_retro %>%
+  rename(time_avg_lead = tale) %>%
+  mutate(qb_adv = qb_avg_2021 - qb_tier_avg)
+
+df_pred %>%
+  ggplot(aes(x = time_avg_lead, y = qb_adv)) +
+  geom_contour(aes(z = exp_wp),
+               binwidth = 1/10,
+               color = "dark gray") +
+  geom_nfl_logos(data = df_2021_retro,
+                 aes(x = time_avg_lead,
+                     y = qb_adv,
+                     team_abbr = team),
+                 width = 0.05) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  theme_light() +
+  scale_x_continuous(breaks = seq(-12, 12, 3),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(-4, 4, 1),
+                     minor_breaks = NULL) +
+  coord_cartesian(xlim = c(-6, 6),
+                  ylim = c(-2, 2)) +
+  labs(x = "Time Average Lead Eval (Pts)",
+       y = "Est QB Tier Advantage",
+       title = "2021 End of Year Power Rankings",
+       subtitle = "Subjective Adjustments for End of Year QB Tiers")
+
+```
+
+
+```{r build_2021_forecast, echo=FALSE}
+
+# Start with 2020 time avg lead baselines
+tal_2020 <- nfltools::nfl_mvt_season(2020) %>%
+  nfltools::nfl_mvt_season_summary() %>%
+  rename(tale = adj_time_avg_lead) %>%
+  select(team, tale)
+
+qb_2021 <- readr::read_csv("qb_tiers_2014_2021.csv") %>%
+  filter(year == 2021) %>%
+  filter(expected_starter == TRUE) %>%
+  select(team, qb_tier_avg)
+
+sched_2021 <- nflfastR::fast_scraper_schedules(2021) %>%
+  filter(game_type == "REG") %>%
+  left_join(qb_2021,
+            by = c("home_team" = "team")) %>%
+  rename(home_qb = qb_tier_avg) %>%
+  mutate(home_qb = ifelse(is.na(home_qb), 4.0, home_qb)) %>%
+  left_join(qb_2021,
+            by = c("away_team" = "team")) %>%
+  rename(away_qb = qb_tier_avg) %>%
+  mutate(away_qb = ifelse(is.na(away_qb), 4.0, away_qb)) %>%
+  left_join(tal_2020,
+            by = c("home_team" = "team")) %>%
+  rename(home_tale = tale) %>%
+  left_join(tal_2020,
+            by = c("away_team" = "team")) %>%
+  rename(away_tale = tale) %>%
+  mutate(home_tale_adv = home_tale - away_tale,
+         home_qb_adv = -1 * (home_qb - away_qb),
+         home_exp_win_p = exp((b_qb * home_qb_adv) + (b_tal*home_tale_adv))) %>%
+  mutate(home_exp_win_p = home_exp_win_p/(1 + home_exp_win_p),
+         home_favorite = ifelse(home_exp_win_p > 0.5, 1, 0),
+         home_win = ifelse(home_result > 0, 1, 0))
+
+sched_2021 %>%
+  mutate(accurate = ifelse(home_favorite == 1 & home_win == 1 |
+                             home_favorite == 0 & home_win == 0,
+                           1, 0)) %>%
+  summarize(accuracy = (sum(accurate)/n())*100) %>%
+  knitr::kable(digits = 1, format = "html")
+
+sched_2021 %>%
+  ggplot(aes(x = home_exp_win_p,
+             #y = factor(home_win),
+             fill = factor(home_win))) +
+  geom_density(alpha = 0.4) +
+  #geom_boxplot() +
+  #geom_jitter(shape = "X") +
+  theme_light() +
+  facet_wrap(~ home_favorite,
+             ncol = 1)
+
+
+
+```
+
 
 ```{r build_pit_forecast, echo=FALSE}
 
