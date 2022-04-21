@@ -1,15 +1,44 @@
 ---
-title: "QB Quality Effects on Time Average Evaluations"
+title: "QB Quality and Time Average Evaluations"
 description: |
-  Exploring Mike Sando's QB Tiers and Time Average Win Residuals.
+  Incoprporating Mike Sando's QB Tiers with Time Averages to Predict Win/Loss Outcomes.
 author:
   - name: Casey Caprini
-date: 2022-03-17
+date: 2022-04-21
 output:
   distill::distill_article:
     self_contained: false
 ---
 
+## Intro
+
+Past posts have explored uses of [NFL time average leads as a single-point summary of overall game performance](https://caseycaprini.github.io/the_latest_numbers/posts/2021-11-28-time-average-nfl-metrics/).
+
+Using a simple logistic regression model, I looked at [2021 regular season win luck](https://caseycaprini.github.io/the_latest_numbers/posts/2022-01-28-2021-nfl-regular-season-win-luck/). Notably, the "luckiest teams" had veteran/high quality QBs. My intuition: quality QBs perform well in comeback and high leverage situations. The residuals from the single feature model reflect that the direct effect of QBs is significant.
+
+Here, I expand the model to include QB quality, using an approach inspired by Mike Sando's QB Tiers.
+
+## Mike Sando's QB Tiers
+
+Mike Sando is probably my favorite national NFL writer. He's one of a few writers that make me a subscriber to the Athletic. His [recent tribute to the late John Clayton](https://theathletic.com/3198705/2022/03/21/john-clayton-espn-nfl-death/) was tremendous.
+
+Each summer since 2014, Sando has released his QB Tier article, where several NFL team personnel evaluate the league's QBs using a simple rubric. From [the 2021 edition](https://theathletic.com/2727336/2021/07/28/2021-nfl-quarterback-tiers-50-coaches-and-evaluators-rank-the-leagues-starters/):
+
+> TIER 1  
+> A Tier 1 quarterback can carry his team each week. The team wins because of him. He expertly handles pure passing situations. He has no real holes in his game...
+>
+> TIER 2  
+> A Tier 2 quarterback can carry his team sometimes but not as consistently. He can handle pure passing situations in doses and/or possesses other dimensions that are special enough to elevate him above Tier 3. He has a hole or two in his game...
+>
+> TIER 3  
+> A Tier 3 quarterback is a legitimate starter but needs a heavier running game and/or defensive component to win. A low-volume dropback passing offense suits him best...
+>
+> TIER 4  
+> A Tier 4 quarterback could be an unproven player with some upside or a veteran who is ultimately best suited as a backup...
+>
+> --- Mike Sando
+
+I really like the tier approach: it aggregates subject matter expert opinion in a straightforward, meaningful way without requiring a false level of precision.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -23,6 +52,7 @@ library(nflfastR)
 library(nflplotR)
 library(nfltools)
 library(rstanarm)
+library(geomtextpath)
 
 ```
 
@@ -62,6 +92,17 @@ qb_tiers <- readr::read_csv("qb_tiers_2014_2021.csv") %>%
 
 ```
 
+## Time Average Lead + QB Quality Model
+
+A summary of the model, fit on regular season games that occured between 2013 and 2020.
+
+* In addition to the game's time average lead, a team's Sando QB Tier advantage is included as a feature in a logistic regression.
+  * I've assumed that the following year's QB Tier is a better indicator of QB quality for a season than their preseason QB Tier.
+    * This has the tradeoff of reducing the size of the data set.
+    * If one of the QBs is not evaluated the next season (e.g., retires), that game is not included in the data set.
+* For each game, the QB tier rating for QB with the most snap counts played for each team is used.
+* For an unranked QB that was the planned opening day starter, I assumed a QB rank of 4.0.
+* For an unranked QB that was not a planned opening day starter, I assumed a QB rank of 4.5.
 
 ```{r get_snap_counts, include=FALSE}
 
@@ -184,6 +225,15 @@ m <- stan_glm(win ~ -1 + time_avg_lead + qb_adv,
 
 ```
 
+## Model Summary
+
+A summary of the coefficients and standard error.
+
+* Time Average Lead: ```r round(coef(m)[1], 2)```
+  * Standard Error: ```r round(se(m)[1], 2)```
+* QB Tier Advantage: ```r round(coef(m)[2], 2)```
+  * Standard Error: ```r round(se(m)[2], 2)```
+  
 ```{r model_plots, echo=FALSE}
 
 b_tal <- coef(m)[1]
@@ -237,7 +287,13 @@ df_train_fit %>%
 
 ```
 
-```{r tier_predict_2022, echo=FALSE}
+## End of Season 2021 Tier Rankings
+
+Using (1) the logistic model above and (2) some estimates I made of the Sando QB Tier grade of the QBs that finished the season (i.e., not L. Jackson for BAL, Big Ben rated Tier 3.5 vice 2.64 from 2021 grades), I made a plot of an end of season power ranking based on a team's season time average lead and QB quality. 
+
+The contour lines represent the model's expected win probability ("exp_wp" in table) against an average team with an average QB. From the plot, think end of season Cleveland Browns led by an injury-plagued Baker Mayfield as roughly representing the baseline.
+
+```{r tier_final_2021, echo=FALSE}
 
 tal_seq = seq(-10, 10, 0.1)
 qb_seq = seq(-4, 4, 0.1)
@@ -257,34 +313,58 @@ qb_avg_2021 <- df_2021_retro %>%
 
 df_2021_retro <- df_2021_retro %>%
   rename(time_avg_lead = tale) %>%
-  mutate(qb_adv = qb_avg_2021 - qb_tier_avg)
+  mutate(qb_adv = qb_avg_2021 - qb_tier_avg) %>%
+  mutate(exp_wp = exp((b_tal*time_avg_lead) + (b_qb*qb_adv))) %>%
+  mutate(exp_wp = exp_wp/(1+exp_wp)) %>%
+  arrange(desc(exp_wp)) %>%
+  mutate(rank = row_number())
 
-df_pred %>%
+p_2021 <- df_pred %>%
   ggplot(aes(x = time_avg_lead, y = qb_adv)) +
-  geom_contour(aes(z = exp_wp),
-               binwidth = 1/10,
-               color = "dark gray") +
+    geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_textcontour(aes(z = exp_wp),
+                   binwidth = 1/10,
+                   color = "dark gray") +
   geom_nfl_logos(data = df_2021_retro,
                  aes(x = time_avg_lead,
                      y = qb_adv,
                      team_abbr = team),
                  width = 0.05) +
-  geom_hline(yintercept = 0) +
-  geom_vline(xintercept = 0) +
   theme_light() +
   scale_x_continuous(breaks = seq(-12, 12, 3),
                      minor_breaks = NULL) +
   scale_y_continuous(breaks = seq(-4, 4, 1),
                      minor_breaks = NULL) +
-  coord_cartesian(xlim = c(-6, 6),
+  coord_cartesian(xlim = c(-7, 7),
                   ylim = c(-2, 2)) +
   labs(x = "Time Average Lead Eval (Pts)",
-       y = "Est QB Tier Advantage",
+       y = "Estimated (Sando) QB Tiers Above Average",
        title = "2021 End of Year Power Rankings",
        subtitle = "Subjective Adjustments for End of Year QB Tiers")
 
+p_2021
+
+df_2021_retro %>%
+  mutate(exp_wp = 100 * exp_wp) %>%
+  select(rank, team, time_avg_lead, qb_adv, exp_wp) %>%
+  knitr::kable(digits = 1, format = "html")
+  
+ggsave("sando_qb_tal_2021.png",
+       plot = p_2021,
+       height = 3.25,
+       width = 5,
+       units = "in",
+       dpi = "retina")
+
 ```
 
+## Quick Backtest on the 2021 Season
+
+Model accuracy for 2021 regular season games, using
+
+* 2020 end of season time average lead data
+* 2021 preseason Sando QB Tiers.
 
 ```{r build_2021_forecast, echo=FALSE}
 
@@ -326,26 +406,36 @@ sched_2021 %>%
   mutate(accurate = ifelse(home_favorite == 1 & home_win == 1 |
                              home_favorite == 0 & home_win == 0,
                            1, 0)) %>%
-  summarize(accuracy = (sum(accurate)/n())*100) %>%
+  summarize(Accuracy = (sum(accurate)/n())*100) %>%
   knitr::kable(digits = 1, format = "html")
 
 sched_2021 %>%
+  mutate(home_win = ifelse(home_win == 1,
+                           "Win",
+                           "Loss/Tie"),
+         home_favorite = ifelse(home_favorite == 0,
+                                "Home Dog",
+                                "Home Favorite")) %>%
   ggplot(aes(x = home_exp_win_p,
-             #y = factor(home_win),
              fill = factor(home_win))) +
   geom_density(alpha = 0.4) +
-  #geom_boxplot() +
-  #geom_jitter(shape = "X") +
   theme_light() +
   facet_wrap(~ home_favorite,
-             ncol = 1)
+             ncol = 1) +
+  labs(x = "Model Expected Win Percentage (%)",
+       y = "Density",
+       fill = "Home Team Result",
+       title = "2021 Regular Season Backtest")
 
 
 
 ```
 
+```{r build_pit_forecast, include=FALSE}
 
-```{r build_pit_forecast, echo=FALSE}
+# ## Pittsburgh Steelers Way Too Early Win Forecast
+
+# Using the model coefficients and some quick subjective estimates of team and QB quality: 
 
 pit_2022 <- tribble(
   ~opponent,
