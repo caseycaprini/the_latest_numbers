@@ -1,0 +1,1 @@
+{"frames":[],"message":"Error in lapply(2014:2020, nfltools::nfl_reg_season_results) %>% bind_rows() %>%  : \n  could not find function \"%>%\"\n"}

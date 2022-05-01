@@ -14,7 +14,11 @@ output:
 
 Past posts have explored uses of [NFL time average leads as a single-point summary of overall game performance](https://caseycaprini.github.io/the_latest_numbers/posts/2021-11-28-time-average-nfl-metrics/).
 
-Using a simple logistic regression model, I looked at [2021 regular season win luck](https://caseycaprini.github.io/the_latest_numbers/posts/2022-01-28-2021-nfl-regular-season-win-luck/). Notably, the "luckiest teams" had veteran/high quality QBs. My intuition: quality QBs perform well in comeback and high leverage situations. The residuals from the single feature model reflect that the direct effect of QBs is significant.
+Using a simple logistic regression model, I looked at [2021 regular season win luck](https://caseycaprini.github.io/the_latest_numbers/posts/2022-01-28-2021-nfl-regular-season-win-luck/). Notably, the "luckiest teams" had veteran/high quality QBs.
+
+![](twitter_screenshot.png)
+
+My intuition: quality QBs perform well in comeback and high leverage situations. The residuals from the single feature model reflect that the direct effect of QBs is significant.
 
 Here, I expand the model to include QB quality, using an approach inspired by Mike Sando's QB Tiers.
 
@@ -229,10 +233,10 @@ m <- stan_glm(win ~ -1 + time_avg_lead + qb_adv,
 
 A summary of the coefficients and standard error.
 
-* Time Average Lead: ```r round(coef(m)[1], 2)```
-  * Standard Error: ```r round(se(m)[1], 2)```
-* QB Tier Advantage: ```r round(coef(m)[2], 2)```
-  * Standard Error: ```r round(se(m)[2], 2)```
+* Time Average Lead: ```r round(coef(m)[1], 3)```
+  * Standard Error: ```r round(se(m)[1], 3)```
+* QB Tier Advantage: ```r round(coef(m)[2], 3)```
+  * Standard Error: ```r round(se(m)[2], 3)```
   
 ```{r model_plots, echo=FALSE}
 
@@ -255,7 +259,7 @@ df_forrest %>%
   geom_linerange(aes(xmin = low,
                      xmax = high)) +
   geom_point() +
-  geom_text(aes(label = round(mid, 2)),
+  geom_text(aes(label = round(mid, 3)),
             nudge_y = 0.15) +
   theme_light() +
   coord_cartesian(xlim = c(-0.1, 0.5)) +
@@ -284,6 +288,37 @@ df_train_fit %>%
        y = "Density",
        title = "Win ~ Time Avg Lead and QB Tier Advantage",
        subtitle = "Density Plot of Predictions for Training Data")
+
+get_midpoint <- function(cut_label) {
+  mean(as.numeric(unlist(strsplit(gsub("\\(|\\)|\\[|\\]", "", as.character(cut_label)), ","))))
+}
+
+df_train_fit %>%
+  mutate(exp_wp = cut_width(exp_wp,
+                            center = 0.5,
+                            width = 0.04)) %>%
+  group_by(exp_wp) %>%
+  summarize(exp_wp = get_midpoint(exp_wp),
+            n = n(),
+            observed_wp = sum(win)/n()) %>%
+  ggplot(aes(x = exp_wp, y = observed_wp)) +
+  geom_abline(intercept = 0,
+              slope = 1) +
+  geom_point(aes(size = n),
+             shape = "X") +
+  theme_light() +
+  scale_x_continuous(breaks = seq(0, 1, by = 1/6),
+                     minor_breaks = NULL,
+                     labels = scales::percent) +
+  scale_y_continuous(breaks = seq(0, 1, by = 1/6),
+                     minor_breaks = NULL,
+                     labels = scales::percent) +
+  labs(x = "Expected Win Percentage (%)",
+       y = "Observed Win Percentage (%)",
+       title = "Model Expected Win Percentage vs Observed",
+       subtitle = "Expected Win Percentage Bin Width: 4%",
+       size = "Observations in Bin:") +
+  theme(legend.position = "bottom")
 
 ```
 

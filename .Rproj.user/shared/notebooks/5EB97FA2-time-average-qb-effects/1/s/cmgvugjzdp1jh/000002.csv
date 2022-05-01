@@ -1,0 +1,11 @@
+"0","win_df <- lapply(2014:2020,
+                 nfltools::nfl_reg_season_results) %>%
+  bind_rows() %>%
+  mutate(team = case_when(team == ""SD"" ~ ""LAC"",
+                          team == ""OAK"" ~ ""LV"",
+                          team == ""STL"" ~ ""LA"",
+                          TRUE ~ team))
+"
+"2","Error in lapply(2014:2020, nfltools::nfl_reg_season_results) %>% bind_rows() %>%  : 
+  could not find function ""%>%""
+"

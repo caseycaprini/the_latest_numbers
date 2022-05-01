@@ -118,7 +118,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","qb_tiers_2014_2022_est.csv","reg_season_2022_forecast.csv","sando_qb_tal_2021.png","tale_qb_tier_ranks_2021.csv","time-average-qb-effects_files/anchor-4.2.2/anchor.min.js","time-average-qb-effects_files/bowser-1.9.3/bowser.min.js","time-average-qb-effects_files/distill-2.2.21/template.v2.js","time-average-qb-effects_files/figure-html5/build_2021_forecast-1.png","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png","time-average-qb-effects_files/figure-html5/model_plots-1.png","time-average-qb-effects_files/figure-html5/model_plots-2.png","time-average-qb-effects_files/figure-html5/tier_final_2021-1.png","time-average-qb-effects_files/figure-html5/tier_predict_2022-1.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map","time-average-qb-effects_files/popper-2.6.0/popper.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-bundle.umd.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-light-border.css","time-average-qb-effects_files/tippy-6.2.7/tippy.css","time-average-qb-effects_files/tippy-6.2.7/tippy.umd.min.js","time-average-qb-effects_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["qb_tiers_2014_2021.csv","qb_tiers_2014_2022_est.csv","reg_season_2022_forecast.csv","sando_qb_tal_2021.png","tale_qb_tier_ranks_2021.csv","time-average-qb-effects_files/anchor-4.2.2/anchor.min.js","time-average-qb-effects_files/bowser-1.9.3/bowser.min.js","time-average-qb-effects_files/distill-2.2.21/template.v2.js","time-average-qb-effects_files/figure-html5/build_2021_forecast-1.png","time-average-qb-effects_files/figure-html5/build_model-1.png","time-average-qb-effects_files/figure-html5/build_model-2.png","time-average-qb-effects_files/figure-html5/build_pit_forecast-1.png","time-average-qb-effects_files/figure-html5/model_plots-1.png","time-average-qb-effects_files/figure-html5/model_plots-2.png","time-average-qb-effects_files/figure-html5/model_plots-3.png","time-average-qb-effects_files/figure-html5/tier_final_2021-1.png","time-average-qb-effects_files/figure-html5/tier_predict_2022-1.png","time-average-qb-effects_files/header-attrs-2.11/header-attrs.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.js","time-average-qb-effects_files/jquery-3.6.0/jquery-3.6.0.min.map","time-average-qb-effects_files/popper-2.6.0/popper.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-bundle.umd.min.js","time-average-qb-effects_files/tippy-6.2.7/tippy-light-border.css","time-average-qb-effects_files/tippy-6.2.7/tippy.css","time-average-qb-effects_files/tippy-6.2.7/tippy.umd.min.js","time-average-qb-effects_files/webcomponents-2.0.0/webcomponents.js","twitter_screenshot.png"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
 <meta name="distill:offset" content="../.."/>
@@ -2416,7 +2416,9 @@ d-appendix d-footnote-list a.footnote-backlink {
 <div class="d-article">
 <h2 id="intro">Intro</h2>
 <p>Past posts have explored uses of <a href="https://caseycaprini.github.io/the_latest_numbers/posts/2021-11-28-time-average-nfl-metrics/">NFL time average leads as a single-point summary of overall game performance</a>.</p>
-<p>Using a simple logistic regression model, I looked at <a href="https://caseycaprini.github.io/the_latest_numbers/posts/2022-01-28-2021-nfl-regular-season-win-luck/">2021 regular season win luck</a>. Notably, the “luckiest teams” had veteran/high quality QBs. My intuition: quality QBs perform well in comeback and high leverage situations. The residuals from the single feature model reflect that the direct effect of QBs is significant.</p>
+<p>Using a simple logistic regression model, I looked at <a href="https://caseycaprini.github.io/the_latest_numbers/posts/2022-01-28-2021-nfl-regular-season-win-luck/">2021 regular season win luck</a>. Notably, the “luckiest teams” had veteran/high quality QBs.</p>
+<p><img src="twitter_screenshot.png" /></p>
+<p>My intuition: quality QBs perform well in comeback and high leverage situations. The residuals from the single feature model reflect that the direct effect of QBs is significant.</p>
 <p>Here, I expand the model to include QB quality, using an approach inspired by Mike Sando’s QB Tiers.</p>
 <h2 id="mike-sandos-qb-tiers">Mike Sando’s QB Tiers</h2>
 <p>Mike Sando is probably my favorite national NFL writer. He’s one of a few writers that make me a subscriber to the Athletic. His <a href="https://theathletic.com/3198705/2022/03/21/john-clayton-espn-nfl-death/">recent tribute to the late John Clayton</a> was tremendous.</p>
@@ -2451,17 +2453,17 @@ A Tier 4 quarterback could be an unproven player with some upside or a veteran w
 <h2 id="model-summary">Model Summary</h2>
 <p>A summary of the coefficients and standard error.</p>
 <ul>
-<li>Time Average Lead: <code>0.31</code>
+<li>Time Average Lead: <code>0.307</code>
 <ul>
-<li>Standard Error: <code>0.02</code></li>
+<li>Standard Error: <code>0.017</code></li>
 </ul></li>
-<li>QB Tier Advantage: <code>0.34</code>
+<li>QB Tier Advantage: <code>0.351</code>
 <ul>
-<li>Standard Error: <code>0.07</code></li>
+<li>Standard Error: <code>0.067</code></li>
 </ul></li>
 </ul>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="time-average-qb-effects_files/figure-html5/model_plots-1.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/model_plots-2.png" width="624" /></p>
+<p><img src="time-average-qb-effects_files/figure-html5/model_plots-1.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/model_plots-2.png" width="624" /><img src="time-average-qb-effects_files/figure-html5/model_plots-3.png" width="624" /></p>
 </div>
 <h2 id="end-of-season-2021-tier-rankings">End of Season 2021 Tier Rankings</h2>
 <p>Using (1) the logistic model above and (2) some estimates I made of the Sando QB Tier grade of the QBs that finished the season (i.e., not L. Jackson for BAL, Big Ben rated Tier 3.5 vice 2.64 from 2021 grades), I made a plot of an end of season power ranking based on a team’s season time average lead and QB quality.</p>
@@ -2503,7 +2505,7 @@ BUF
 1.7
 </td>
 <td style="text-align:right;">
-89.6
+89.8
 </td>
 </tr>
 <tr>
@@ -2520,7 +2522,7 @@ KC
 2.0
 </td>
 <td style="text-align:right;">
-88.3
+88.6
 </td>
 </tr>
 <tr>
@@ -2537,7 +2539,7 @@ TB
 1.7
 </td>
 <td style="text-align:right;">
-86.7
+87.0
 </td>
 </tr>
 <tr>
@@ -2554,7 +2556,7 @@ DAL
 0.7
 </td>
 <td style="text-align:right;">
-84.8
+85.0
 </td>
 </tr>
 <tr>
@@ -2571,7 +2573,7 @@ IND
 -0.3
 </td>
 <td style="text-align:right;">
-78.8
+78.9
 </td>
 </tr>
 <tr>
@@ -2588,7 +2590,7 @@ GB
 2.0
 </td>
 <td style="text-align:right;">
-78.4
+78.8
 </td>
 </tr>
 <tr>
@@ -2605,7 +2607,7 @@ LA
 1.0
 </td>
 <td style="text-align:right;">
-76.7
+77.0
 </td>
 </tr>
 <tr>
@@ -2622,7 +2624,7 @@ ARI
 0.5
 </td>
 <td style="text-align:right;">
-76.4
+76.6
 </td>
 </tr>
 <tr>
@@ -2639,7 +2641,7 @@ SEA
 1.2
 </td>
 <td style="text-align:right;">
-72.0
+72.2
 </td>
 </tr>
 <tr>
@@ -2656,29 +2658,12 @@ TEN
 0.5
 </td>
 <td style="text-align:right;">
-71.1
+71.2
 </td>
 </tr>
 <tr>
 <td style="text-align:right;">
 11
-</td>
-<td style="text-align:left;">
-NE
-</td>
-<td style="text-align:right;">
-3.1
-</td>
-<td style="text-align:right;">
--0.8
-</td>
-<td style="text-align:right;">
-66.5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-12
 </td>
 <td style="text-align:left;">
 LAC
@@ -2690,7 +2675,24 @@ LAC
 1.0
 </td>
 <td style="text-align:right;">
-66.2
+66.5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:left;">
+NE
+</td>
+<td style="text-align:right;">
+3.1
+</td>
+<td style="text-align:right;">
+-0.8
+</td>
+<td style="text-align:right;">
+66.4
 </td>
 </tr>
 <tr>
@@ -2707,7 +2709,7 @@ MIN
 0.2
 </td>
 <td style="text-align:right;">
-64.6
+64.7
 </td>
 </tr>
 <tr>
@@ -2741,7 +2743,7 @@ CIN
 0.7
 </td>
 <td style="text-align:right;">
-55.5
+55.7
 </td>
 </tr>
 <tr>
@@ -2758,7 +2760,7 @@ CLE
 -0.5
 </td>
 <td style="text-align:right;">
-51.7
+51.6
 </td>
 </tr>
 <tr>
@@ -2792,7 +2794,7 @@ PHI
 -0.5
 </td>
 <td style="text-align:right;">
-40.4
+40.2
 </td>
 </tr>
 <tr>
@@ -2809,7 +2811,7 @@ BAL
 -1.0
 </td>
 <td style="text-align:right;">
-38.5
+38.2
 </td>
 </tr>
 <tr>
@@ -2826,7 +2828,7 @@ NO
 -1.3
 </td>
 <td style="text-align:right;">
-36.4
+36.2
 </td>
 </tr>
 <tr>
@@ -2843,7 +2845,7 @@ MIA
 -1.0
 </td>
 <td style="text-align:right;">
-35.6
+35.4
 </td>
 </tr>
 <tr>
@@ -2860,7 +2862,7 @@ CAR
 -1.3
 </td>
 <td style="text-align:right;">
-33.7
+33.4
 </td>
 </tr>
 <tr>
@@ -2877,7 +2879,7 @@ DEN
 -0.8
 </td>
 <td style="text-align:right;">
-29.4
+29.3
 </td>
 </tr>
 <tr>
@@ -2894,7 +2896,7 @@ CHI
 -0.8
 </td>
 <td style="text-align:right;">
-28.2
+28.0
 </td>
 </tr>
 <tr>
@@ -2911,7 +2913,7 @@ ATL
 0.2
 </td>
 <td style="text-align:right;">
-27.1
+27.0
 </td>
 </tr>
 <tr>
@@ -2928,7 +2930,7 @@ PIT
 -0.5
 </td>
 <td style="text-align:right;">
-24.5
+24.4
 </td>
 </tr>
 <tr>
@@ -2945,7 +2947,7 @@ WAS
 -0.8
 </td>
 <td style="text-align:right;">
-24.1
+23.9
 </td>
 </tr>
 <tr>
@@ -2962,7 +2964,7 @@ HOU
 -1.0
 </td>
 <td style="text-align:right;">
-23.1
+22.9
 </td>
 </tr>
 <tr>
@@ -2979,7 +2981,7 @@ DET
 -0.3
 </td>
 <td style="text-align:right;">
-17.0
+16.8
 </td>
 </tr>
 <tr>
@@ -2996,7 +2998,7 @@ NYG
 -1.5
 </td>
 <td style="text-align:right;">
-11.4
+11.2
 </td>
 </tr>
 <tr>
@@ -3013,7 +3015,7 @@ NYJ
 -1.0
 </td>
 <td style="text-align:right;">
-9.6
+9.4
 </td>
 </tr>
 <tr>
@@ -3030,7 +3032,7 @@ JAX
 -0.8
 </td>
 <td style="text-align:right;">
-9.3
+9.1
 </td>
 </tr>
 </tbody>

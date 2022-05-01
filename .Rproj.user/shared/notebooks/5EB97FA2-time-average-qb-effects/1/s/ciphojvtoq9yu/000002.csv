@@ -1,7 +1,11 @@
-"0",""
-"0","qb_pfr_ids <- nflreadr::load_snap_counts(2014:2021) %>%"
-"0","  filter(game_type == ""REG"") %>%"
-"0","  filter(position == ""QB"") %>%"
-"0","  select(player, pfr_player_id) %>%"
-"0","  distinct()"
-"0",""
+"0","qb_pfr_ids <- nflreadr::load_snap_counts(2014:2021) %>%
+  filter(game_type == ""REG"") %>%
+  filter(position == ""QB"") %>%
+  select(player, pfr_player_id) %>%
+  distinct()
+"
+"2","Note: nflreadr caches (i.e., stores a saved version) data by default.
+If you expect different output try one of the following:
+[34mi[39m Restart your R Session or
+[34mi[39m Run `nflreadr::.clear_cache()`.
+To disable this warning, run `options(nflreadr.verbose = FALSE)` or add it to your .Rprofile"

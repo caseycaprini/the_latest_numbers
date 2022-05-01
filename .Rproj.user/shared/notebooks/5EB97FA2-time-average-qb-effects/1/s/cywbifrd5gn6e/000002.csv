@@ -1,0 +1,35 @@
+"0","library(tidyverse)
+library(nflreadr)
+"
+"2","
+Attaching package: ‘nflreadr’
+
+"
+"2","The following objects are masked from ‘package:nflfastR’:
+
+    load_pbp, load_player_stats
+
+"
+"0","library(nflfastR)"
+"0","library(nflplotR)"
+"0","library(nfltools)"
+"0","library(rstanarm)"
+"2","package ‘rstanarm’ was built under R version 4.1.3"
+"2","Loading required package: Rcpp
+"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
+"2","This is rstanarm version 2.21.1
+"
+"2","- See https://mc-stan.org/rstanarm/articles/priors for changes to default priors!
+"
+"2","- Default priors may change, so it's safest to specify priors, even if equivalent to the defaults.
+"
+"2","- For execution on a local, multicore CPU with excess RAM we recommend calling
+"
+"2","  options(mc.cores = parallel::detectCores())
+"
+"0","library(geomtextpath)"
+"2","package ‘geomtextpath’ was built under R version 4.1.3"
