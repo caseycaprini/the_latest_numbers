@@ -263,9 +263,9 @@ df_forrest %>%
             nudge_y = 0.15) +
   theme_light() +
   coord_cartesian(xlim = c(-0.1, 0.5)) +
-  labs(x = "Estimate",
+  labs(x = "Estimate (+/- 2 SEs)",
        y = "Parameter",
-       title = "Logistic Regression Coefficient Estimates (+/- 2 SEs)",
+       title = "Logistic Regression Coefficient Estimate Intervals",
        subtitle = "win ~ -1 + time_avg_lead + qb_adv") +
   scale_x_continuous(minor_breaks = NULL)
 
@@ -287,7 +287,8 @@ df_train_fit %>%
   labs(x = "Expected Win Percentage (%)",
        y = "Density",
        title = "Win ~ Time Avg Lead and QB Tier Advantage",
-       subtitle = "Density Plot of Predictions for Training Data")
+       subtitle = "Density Plot of Predictions for Training Data",
+       fill = NULL)
 
 get_midpoint <- function(cut_label) {
   mean(as.numeric(unlist(strsplit(gsub("\\(|\\)|\\[|\\]", "", as.character(cut_label)), ","))))
