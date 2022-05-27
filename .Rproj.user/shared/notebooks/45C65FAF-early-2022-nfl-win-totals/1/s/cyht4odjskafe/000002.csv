@@ -1,0 +1,19 @@
+"0",""
+"0","sched_df <- readr::read_csv(""early_win_total_sched.csv"")"
+"2","[1mRows: [22m[34m90[39m [1mColumns: [22m[34m3[39m"
+"2","[36m--[39m [1mColumn specification[22m [36m-----------------------------------------------------------------------------------[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (2): team, opponent
+[32mdbl[39m (1): week"
+"2","
+[36mi[39m Use [38;5;235m[48;5;253m[38;5;235m[48;5;253m`spec()`[48;5;253m[38;5;235m[49m[39m to retrieve the full column specification for this data.
+[36mi[39m Specify the column types or set [38;5;235m[48;5;253m[38;5;235m[48;5;253m`show_col_types = FALSE`[48;5;253m[38;5;235m[49m[39m to quiet this message."
+"0","input_df <- readr::read_csv(""qb_tier_early_est.csv"")"
+"2","[1mRows: [22m[34m32[39m [1mColumns: [22m[34m8[39m"
+"2","[36m--[39m [1mColumn specification[22m [36m-----------------------------------------------------------------------------------[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (4): conference, division, team, qb
+[32mdbl[39m (4): sando_qb_tier, min_tal, max_tal, tal_est"
+"2","
+[36mi[39m Use [38;5;235m[48;5;253m[38;5;235m[48;5;253m`spec()`[48;5;253m[38;5;235m[49m[39m to retrieve the full column specification for this data.
+[36mi[39m Specify the column types or set [38;5;235m[48;5;253m[38;5;235m[48;5;253m`show_col_types = FALSE`[48;5;253m[38;5;235m[49m[39m to quiet this message."
