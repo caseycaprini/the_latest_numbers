@@ -1,0 +1,194 @@
+---
+title: "A Basic Multilevel Model Using NFL Data"
+description: |
+  Replacing averages with random intercepts model estimates.
+author:
+  - name: Casey Caprini
+date: 2022-09-12
+output:
+  distill::distill_article:
+    self_contained: false
+preview: nfl_2021_reg_season_per_play.png
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries, include=FALSE}
+
+library(tidyverse)
+library(nflfastR)
+library(nfltools)
+library(nflplotR)
+library(lme4)
+
+```
+
+```{r penalty_yards, results=FALSE}
+
+penalty_yards_gained <- function(df){
+  df %>%
+    mutate(yards_gained = ifelse(play_type_nfl == "PENALTY",
+                                 ifelse(penalty_team == posteam,
+                                        -1 * penalty_yards,
+                                        penalty_yards),
+                                 yards_gained)) %>%
+    return()
+}
+
+```
+
+```{r get_pbp_data, results=FALSE}
+
+pbp_df <- nflfastR::load_pbp(2021) %>%
+  filter(season_type == "REG") %>%
+  filter(play_type_nfl %in% c("GAME_START",
+                              "KICK_OFF",
+                              "PUNT",
+                              "TIMEOUT",
+                              "FIELD_GOAL",
+                              "XP_KICK",
+                              "END_QUARTER",
+                              "END_GAME",
+                              "PAT2",
+                              "FREE_KICK",
+                              "COMMENT") == F) %>%
+  filter(is.na(play_type_nfl) == F) %>%
+  filter(play_type %in% c("qb_kneel",
+                          "qb_spike") == F) %>%
+  filter(grepl("(Punt formation)", desc) == F) %>%
+  filter(grepl(", offsetting.", desc) == F) %>%
+  penalty_yards_gained()
+
+```
+
+```{r calculate_unit_averages, results=FALSE}
+
+off_avg_df <- pbp_df %>%
+  group_by(posteam) %>%
+  summarize(off_yards_per_play = mean(yards_gained))
+
+def_avg_df <- pbp_df %>%
+  group_by(defteam) %>%
+  summarize(def_yards_per_play = mean(yards_gained))
+
+unit_avg <- left_join(off_avg_df,
+                        def_avg_df,
+                        by = c("posteam" = "defteam")) %>%
+  rename(team = posteam)
+
+rm(off_avg_df,
+   def_avg_df)
+
+```
+
+```{r calculate_unit_rand_int, results=FALSE}
+
+rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam),
+                 data = pbp_df)
+
+off_rand_int <- coef(rand_int)$posteam %>%
+  rownames_to_column(var = "team") %>%
+  rename(off_estimate = `(Intercept)`)
+
+def_rand_int <- coef(rand_int)$defteam %>%
+  rownames_to_column(var = "team") %>%
+  rename(def_estimate = `(Intercept)`)
+
+unit_est <- left_join(off_rand_int,
+                      def_rand_int,
+                      by = c("team" = "team"))
+
+df <- left_join(unit_avg,
+                unit_est,
+                by = c("team" = "team")) %>%
+  mutate(def_adjustment = def_estimate - def_yards_per_play,
+         off_adjustment = off_estimate - off_yards_per_play)
+
+off_avg <- mean(df$off_estimate)
+def_avg <- mean(df$def_estimate)
+
+rm(off_rand_int,
+   def_rand_int,
+   unit_avg,
+   unit_est,
+   pbp_df)
+
+```
+
+```{r plot, include=FALSE}
+
+df %>%
+  ggplot(aes(x = off_estimate,
+             y = def_estimate)) +
+  geom_hline(yintercept = def_avg) +
+  geom_vline(xintercept = off_avg) +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.05) +
+  scale_y_reverse(breaks = seq(4.0, 6.0, by = 0.2),
+                  minor_breaks = NULL) +
+  scale_x_continuous(breaks = seq(4.0, 6.0, by = 0.2),
+                     minor_breaks = NULL) +
+  theme_light()
+
+```
+
+```{r scaled_plot, include=FALSE}
+
+scaled_df <- df %>%
+  mutate(off_estimate = scale(off_estimate),
+         def_estimate = scale(def_estimate),
+         overall = (off_estimate + (-1*def_estimate)/2)) %>%
+  arrange(desc(overall)) %>%
+  mutate(rank = row_number(),
+         percentile = pnorm(overall))
+  
+scaled_plot <- scaled_df %>%
+  ggplot(aes(x = off_estimate,
+             y = def_estimate)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_abline(slope = -1,
+              intercept = seq(-6, 6, by = 1.5),
+              color = "dark gray") +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.05) +
+  scale_y_reverse(breaks = seq(-4, 4, by = 1),
+                  minor_breaks = NULL) +
+  scale_x_continuous(breaks = seq(-4, 4, by = 1),
+                     minor_breaks = NULL) +
+  theme_light()
+
+p_2021 <- scaled_df %>%
+  ggplot(aes(x = percentile,
+             y = rank)) +
+  geom_hline(yintercept = c(0.5, 8.5, 16.5, 24.5, 32.5),
+             color = "dark gray",
+             linetype = "dashed") +
+  geom_vline(xintercept = c(0, 0.25, 0.5, 0.75, 1),
+             color = "dark gray") +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.05) +
+  scale_x_continuous(minor_breaks = NULL,
+                     labels = scales::percent) +
+  scale_y_reverse(breaks = NULL,
+                  minor_breaks = NULL) +
+  theme_light() +
+  labs(title = "2021 NFL Regular Season Per Play Rankings",
+       subtitle = "Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage",
+       x = "Combined Adjusted Yards Per Play Percentile",
+       y = NULL,
+       caption = "Data: nflfastR | Plot: nflplotR | Model: lme4")
+
+ggsave("nfl_2021_reg_season_per_play.png",
+       plot = p_2021,
+       units = "in",
+       height = 5.25,
+       width = 5,
+       dpi = "retina")
+
+```
+
+![](nfl_2021_reg_season_per_play.png)

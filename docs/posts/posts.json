@@ -1,20 +1,20 @@
 [
   {
-    "path": "posts/2022-05-19-early-2022-nfl-win-totals/",
-    "title": "Early 2022 NFL Win Totals",
-    "description": "Initial win total estimate based on 2021 time average performance and 2022 QB quality.",
+    "path": "posts/2022-09-12-nfl-basic-multilevel-models/",
+    "title": "A Basic Multilevel Model Using NFL Data",
+    "description": "Replacing averages with random intercepts model estimates.",
     "author": [
       {
         "name": "Casey Caprini",
         "url": {}
       }
     ],
-    "date": "2022-05-19",
+    "date": "2022-09-12",
     "categories": [],
-    "contents": "\r\n\r\n\r\n\r\n\r\n\r\n",
-    "preview": {},
-    "last_modified": "2022-05-27T00:19:03-04:00",
-    "input_file": "early-2022-nfl-win-totals.knit.md"
+    "contents": "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+    "preview": "posts/2022-09-12-nfl-basic-multilevel-models/nfl_2021_reg_season_per_play.png",
+    "last_modified": "2022-09-13T23:58:28-04:00",
+    "input_file": "nfl-basic-multilevel-models.knit.md"
   },
   {
     "path": "posts/2022-03-17-time-average-qb-effects/",
