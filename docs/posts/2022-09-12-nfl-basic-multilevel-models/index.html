@@ -114,12 +114,12 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
 <script type="text/json" id="radix-rmarkdown-metadata">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","preview"]}},"value":[{"type":"character","attributes":{},"value":["A Basic Multilevel Model Using NFL Data"]},{"type":"character","attributes":{},"value":["Replacing averages with random intercepts model estimates."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name"]}},"value":[{"type":"character","attributes":{},"value":["Casey Caprini"]}]}]},{"type":"character","attributes":{},"value":["2022-09-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained"]}},"value":[{"type":"logical","attributes":{},"value":[false]}]}]},{"type":"character","attributes":{},"value":["nfl_2021_reg_season_per_play.png"]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","preview"]}},"value":[{"type":"character","attributes":{},"value":["A Basic Multilevel Model Using NFL Data"]},{"type":"character","attributes":{},"value":["Replacing averages with random intercepts model estimates."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name"]}},"value":[{"type":"character","attributes":{},"value":["Casey Caprini"]}]}]},{"type":"character","attributes":{},"value":["2022-09-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["nfl_2021_reg_season_per_play.png"]}]}
 </script>
 <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["nfl-basic-multilevel-models_files/anchor-4.2.2/anchor.min.js","nfl-basic-multilevel-models_files/bowser-1.9.3/bowser.min.js","nfl-basic-multilevel-models_files/distill-2.2.21/template.v2.js","nfl-basic-multilevel-models_files/figure-html5/plot-1.png","nfl-basic-multilevel-models_files/figure-html5/scaled_plot-1.png","nfl-basic-multilevel-models_files/header-attrs-2.14/header-attrs.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.map","nfl-basic-multilevel-models_files/popper-2.6.0/popper.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-bundle.umd.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-light-border.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.umd.min.js","nfl-basic-multilevel-models_files/webcomponents-2.0.0/webcomponents.js","nfl_2021_reg_season_per_play.png"]}
+  {"type":"character","attributes":{},"value":["nfl-basic-multilevel-models_files/anchor-4.2.2/anchor.min.js","nfl-basic-multilevel-models_files/bowser-1.9.3/bowser.min.js","nfl-basic-multilevel-models_files/distill-2.2.21/template.v2.js","nfl-basic-multilevel-models_files/figure-html5/plot-1.png","nfl-basic-multilevel-models_files/figure-html5/scaled_plot-1.png","nfl-basic-multilevel-models_files/header-attrs-2.14/header-attrs.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.map","nfl-basic-multilevel-models_files/popper-2.6.0/popper.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-bundle.umd.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-light-border.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.umd.min.js","nfl-basic-multilevel-models_files/webcomponents-2.0.0/webcomponents.js","nfl_2021_reg_season_per_play.png","nfl_2021_reg_season_per_play_tiers.png","nfl_2021_yards_per_play_pooling.png"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
 <meta name="distill:offset" content="../.."/>
@@ -2445,16 +2445,247 @@ d-appendix d-footnote-list a.footnote-backlink {
 
 <div class="d-article">
 <div class="layout-chunk" data-layout="l-body">
-
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://www.nflfastr.com/'>nflfastR</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>nfltools</span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://nflplotr.nflverse.com'>nflplotR</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/lme4/lme4/'>lme4</a></span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>penalty_yards_gained</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>df</span><span class='op'>)</span><span class='op'>{</span></span>
+<span>  <span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>yards_gained <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>play_type_nfl</span> <span class='op'>==</span> <span class='st'>"PENALTY"</span>,</span>
+<span>                                 <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>penalty_team</span> <span class='op'>==</span> <span class='va'>posteam</span>,</span>
+<span>                                        <span class='op'>-</span><span class='fl'>1</span> <span class='op'>*</span> <span class='va'>penalty_yards</span>,</span>
+<span>                                        <span class='va'>penalty_yards</span><span class='op'>)</span>,</span>
+<span>                                 <span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span><span class='op'>}</span></span></code></pre>
+</div>
+</details>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>pbp_df</span> <span class='op'>&lt;-</span> <span class='fu'>nflfastR</span><span class='fu'>::</span><span class='fu'><a href='https://www.nflfastr.com/reference/load_pbp.html'>load_pbp</a></span><span class='op'>(</span><span class='fl'>2021</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>season_type</span> <span class='op'>==</span> <span class='st'>"REG"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>play_type_nfl</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"GAME_START"</span>,</span>
+<span>                              <span class='st'>"KICK_OFF"</span>,</span>
+<span>                              <span class='st'>"PUNT"</span>,</span>
+<span>                              <span class='st'>"TIMEOUT"</span>,</span>
+<span>                              <span class='st'>"FIELD_GOAL"</span>,</span>
+<span>                              <span class='st'>"XP_KICK"</span>,</span>
+<span>                              <span class='st'>"END_QUARTER"</span>,</span>
+<span>                              <span class='st'>"END_GAME"</span>,</span>
+<span>                              <span class='st'>"PAT2"</span>,</span>
+<span>                              <span class='st'>"FREE_KICK"</span>,</span>
+<span>                              <span class='st'>"COMMENT"</span><span class='op'>)</span> <span class='op'>==</span> <span class='cn'>F</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>play_type_nfl</span><span class='op'>)</span> <span class='op'>==</span> <span class='cn'>F</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>play_type</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"qb_kneel"</span>,</span>
+<span>                          <span class='st'>"qb_spike"</span><span class='op'>)</span> <span class='op'>==</span> <span class='cn'>F</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/grep.html'>grepl</a></span><span class='op'>(</span><span class='st'>"(Punt formation)"</span>, <span class='va'>desc</span><span class='op'>)</span> <span class='op'>==</span> <span class='cn'>F</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/grep.html'>grepl</a></span><span class='op'>(</span><span class='st'>", offsetting."</span>, <span class='va'>desc</span><span class='op'>)</span> <span class='op'>==</span> <span class='cn'>F</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'>penalty_yards_gained</span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>off_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>posteam</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>off_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>def_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>defteam</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>def_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>unit_avg</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>off_avg_df</span>,</span>
+<span>                      <span class='va'>def_avg_df</span>,</span>
+<span>                      by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"posteam"</span> <span class='op'>=</span> <span class='st'>"defteam"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>team <span class='op'>=</span> <span class='va'>posteam</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>off_avg_df</span>,</span>
+<span>   <span class='va'>def_avg_df</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>rand_int</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/lme4/man/lmer.html'>lmer</a></span><span class='op'>(</span><span class='va'>yards_gained</span> <span class='op'>~</span> <span class='fl'>1</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>posteam</span><span class='op'>)</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>defteam</span><span class='op'>)</span>,</span>
+<span>                 data <span class='op'>=</span> <span class='va'>pbp_df</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>off_rand_int</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>rand_int</span><span class='op'>)</span><span class='op'>$</span><span class='va'>posteam</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames_to_column</a></span><span class='op'>(</span>var <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>off_estimate <span class='op'>=</span> <span class='va'>`(Intercept)`</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>def_rand_int</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>rand_int</span><span class='op'>)</span><span class='op'>$</span><span class='va'>defteam</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames_to_column</a></span><span class='op'>(</span>var <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>def_estimate <span class='op'>=</span> <span class='va'>`(Intercept)`</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>unit_est</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>off_rand_int</span>,</span>
+<span>                      <span class='va'>def_rand_int</span>,</span>
+<span>                      by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"team"</span> <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>df</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>unit_avg</span>,</span>
+<span>                <span class='va'>unit_est</span>,</span>
+<span>                by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"team"</span> <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>def_adjustment <span class='op'>=</span> <span class='va'>def_estimate</span> <span class='op'>-</span> <span class='va'>def_yards_per_play</span>,</span>
+<span>         off_adjustment <span class='op'>=</span> <span class='va'>off_estimate</span> <span class='op'>-</span> <span class='va'>off_yards_per_play</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>yards_per_play</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>pbp_df</span><span class='op'>$</span><span class='va'>yards_gained</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>off_rand_int</span>,</span>
+<span>   <span class='va'>def_rand_int</span>,</span>
+<span>   <span class='va'>unit_avg</span>,</span>
+<span>   <span class='va'>unit_est</span>,</span>
+<span>   <span class='va'>pbp_df</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>p_pooling</span> <span class='op'>&lt;-</span> <span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>off_yards_per_play</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>def_yards_per_play</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_hline</a></span><span class='op'>(</span>yintercept <span class='op'>=</span> <span class='va'>yards_per_play</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_vline</a></span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='va'>yards_per_play</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_segment.html'>geom_segment</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>xend <span class='op'>=</span> <span class='va'>off_estimate</span>,</span>
+<span>                   yend <span class='op'>=</span> <span class='va'>def_estimate</span>,</span>
+<span>                   color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/geom_nfl_logos.html'>geom_nfl_logos</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>off_estimate</span>,</span>
+<span>                     y <span class='op'>=</span> <span class='va'>def_estimate</span>,</span>
+<span>                     team_abbr <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span>,</span>
+<span>                 width <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_reverse</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>4.0</span>, <span class='fl'>6.0</span>, by <span class='op'>=</span> <span class='fl'>0.2</span><span class='op'>)</span>,</span>
+<span>                  minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>4.0</span>, <span class='fl'>6.0</span>, by <span class='op'>=</span> <span class='fl'>0.2</span><span class='op'>)</span>,</span>
+<span>                     minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/scale_nfl.html'>scale_color_nfl</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Offensive Yards Per Play"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='st'>"Defensive Yards Per Play"</span>,</span>
+<span>       title <span class='op'>=</span> <span class='st'>"Adjusted Yards Per Play"</span>,</span>
+<span>       subtitle <span class='op'>=</span> <span class='st'>"The Plexiglass Principle Adaptively Applied Via Partial Pooling"</span>,</span>
+<span>       caption <span class='op'>=</span> <span class='st'>"Data: nflfastR | Plot: nflplotR | Model: lme4"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsave.html'>ggsave</a></span><span class='op'>(</span><span class='st'>"nfl_2021_yards_per_play_pooling.png"</span>,</span>
+<span>       plot <span class='op'>=</span> <span class='va'>p_pooling</span>,</span>
+<span>       units <span class='op'>=</span> <span class='st'>"in"</span>,</span>
+<span>       height <span class='op'>=</span> <span class='fl'>5.25</span>,</span>
+<span>       width <span class='op'>=</span> <span class='fl'>5</span>,</span>
+<span>       dpi <span class='op'>=</span> <span class='st'>"retina"</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<p><img src="nfl_2021_yards_per_play_pooling.png" /></p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>scaled_df</span> <span class='op'>&lt;-</span> <span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>off_estimate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>off_estimate</span><span class='op'>)</span>,</span>
+<span>         def_estimate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>def_estimate</span><span class='op'>)</span>,</span>
+<span>         overall <span class='op'>=</span> <span class='op'>(</span><span class='va'>off_estimate</span> <span class='op'>+</span> <span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>*</span><span class='va'>def_estimate</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/desc.html'>desc</a></span><span class='op'>(</span><span class='va'>overall</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>rank <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/ranking.html'>row_number</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>         percentile <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>pnorm</a></span><span class='op'>(</span><span class='va'>overall</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  </span>
+<span><span class='va'>scaled_plot</span> <span class='op'>&lt;-</span> <span class='va'>scaled_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>off_estimate</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>def_estimate</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_hline</a></span><span class='op'>(</span>yintercept <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_vline</a></span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_abline</a></span><span class='op'>(</span>slope <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>,</span>
+<span>              intercept <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>6</span>, <span class='fl'>6</span>, by <span class='op'>=</span> <span class='fl'>1.5</span><span class='op'>)</span>,</span>
+<span>              color <span class='op'>=</span> <span class='st'>"dark gray"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/geom_nfl_logos.html'>geom_nfl_logos</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>team_abbr <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span>,</span>
+<span>                 width <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_reverse</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>4</span>, <span class='fl'>4</span>, by <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>,</span>
+<span>                  minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>4</span>, <span class='fl'>4</span>, by <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>,</span>
+<span>                     minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"2021 NFL Yards Per Play Tiers"</span>,</span>
+<span>       subtitle <span class='op'>=</span> <span class='st'>"Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage"</span>,</span>
+<span>       x <span class='op'>=</span> <span class='st'>"(Scaled) Offensive Adjusted Yards Per Play"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='st'>"(Scaled) Defensive Adjusted Yards Per Play"</span>,</span>
+<span>       caption <span class='op'>=</span> <span class='st'>"Data: nflfastR | Plot: nflplotR | Model: lme4"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsave.html'>ggsave</a></span><span class='op'>(</span><span class='st'>"nfl_2021_reg_season_per_play_tiers.png"</span>,</span>
+<span>       plot <span class='op'>=</span> <span class='va'>scaled_plot</span>,</span>
+<span>       units <span class='op'>=</span> <span class='st'>"in"</span>,</span>
+<span>       height <span class='op'>=</span> <span class='fl'>5.25</span>,</span>
+<span>       width <span class='op'>=</span> <span class='fl'>5</span>,</span>
+<span>       dpi <span class='op'>=</span> <span class='st'>"retina"</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<p><img src="nfl_2021_reg_season_per_play_tiers.png" /></p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>p_2021</span> <span class='op'>&lt;-</span> <span class='va'>scaled_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>percentile</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>rank</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_hline</a></span><span class='op'>(</span>yintercept <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.5</span>, <span class='fl'>8.5</span>, <span class='fl'>16.5</span>, <span class='fl'>24.5</span>, <span class='fl'>32.5</span><span class='op'>)</span>,</span>
+<span>             color <span class='op'>=</span> <span class='st'>"dark gray"</span>,</span>
+<span>             linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_vline</a></span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0.25</span>, <span class='fl'>0.5</span>, <span class='fl'>0.75</span>, <span class='fl'>1</span><span class='op'>)</span>,</span>
+<span>             color <span class='op'>=</span> <span class='st'>"dark gray"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/geom_nfl_logos.html'>geom_nfl_logos</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>team_abbr <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span>,</span>
+<span>                 width <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>                     labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/percent_format.html'>percent</a></span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_reverse</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>                  minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"2021 NFL Regular Season Per Play Rankings"</span>,</span>
+<span>       subtitle <span class='op'>=</span> <span class='st'>"Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage"</span>,</span>
+<span>       x <span class='op'>=</span> <span class='st'>"Combined Adjusted Yards Per Play Percentile"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>       caption <span class='op'>=</span> <span class='st'>"Data: nflfastR | Plot: nflplotR | Model: lme4"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsave.html'>ggsave</a></span><span class='op'>(</span><span class='st'>"nfl_2021_reg_season_per_play.png"</span>,</span>
+<span>       plot <span class='op'>=</span> <span class='va'>p_2021</span>,</span>
+<span>       units <span class='op'>=</span> <span class='st'>"in"</span>,</span>
+<span>       height <span class='op'>=</span> <span class='fl'>5.25</span>,</span>
+<span>       width <span class='op'>=</span> <span class='fl'>5</span>,</span>
+<span>       dpi <span class='op'>=</span> <span class='st'>"retina"</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <p><img src="nfl_2021_reg_season_per_play.png" /></p>
 <div class="sourceCode" id="cb1"><pre

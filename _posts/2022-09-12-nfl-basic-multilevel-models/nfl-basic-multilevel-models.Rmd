@@ -8,6 +8,7 @@ date: 2022-09-12
 output:
   distill::distill_article:
     self_contained: false
+    code_folding: true
 preview: nfl_2021_reg_season_per_play.png
 ---
 
@@ -16,7 +17,7 @@ preview: nfl_2021_reg_season_per_play.png
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r libraries, include=FALSE}
+```{r libraries}
 
 library(tidyverse)
 library(nflfastR)
@@ -26,7 +27,7 @@ library(lme4)
 
 ```
 
-```{r penalty_yards, results=FALSE}
+```{r penalty_yards}
 
 penalty_yards_gained <- function(df){
   df %>%
@@ -64,7 +65,7 @@ pbp_df <- nflfastR::load_pbp(2021) %>%
 
 ```
 
-```{r calculate_unit_averages, results=FALSE}
+```{r calculate_unit_averages}
 
 off_avg_df <- pbp_df %>%
   group_by(posteam) %>%
@@ -75,8 +76,8 @@ def_avg_df <- pbp_df %>%
   summarize(def_yards_per_play = mean(yards_gained))
 
 unit_avg <- left_join(off_avg_df,
-                        def_avg_df,
-                        by = c("posteam" = "defteam")) %>%
+                      def_avg_df,
+                      by = c("posteam" = "defteam")) %>%
   rename(team = posteam)
 
 rm(off_avg_df,
@@ -84,7 +85,7 @@ rm(off_avg_df,
 
 ```
 
-```{r calculate_unit_rand_int, results=FALSE}
+```{r calculate_unit_rand_int}
 
 rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam),
                  data = pbp_df)
@@ -107,8 +108,7 @@ df <- left_join(unit_avg,
   mutate(def_adjustment = def_estimate - def_yards_per_play,
          off_adjustment = off_estimate - off_yards_per_play)
 
-off_avg <- mean(df$off_estimate)
-def_avg <- mean(df$def_estimate)
+yards_per_play <- mean(pbp_df$yards_gained)
 
 rm(off_rand_int,
    def_rand_int,
@@ -118,24 +118,45 @@ rm(off_rand_int,
 
 ```
 
-```{r plot, include=FALSE}
+```{r plot}
 
-df %>%
-  ggplot(aes(x = off_estimate,
-             y = def_estimate)) +
-  geom_hline(yintercept = def_avg) +
-  geom_vline(xintercept = off_avg) +
-  geom_nfl_logos(aes(team_abbr = team),
+p_pooling <- df %>%
+  ggplot(aes(x = off_yards_per_play,
+             y = def_yards_per_play)) +
+  geom_hline(yintercept = yards_per_play) +
+  geom_vline(xintercept = yards_per_play) +
+  geom_point(aes(color = team)) +
+  geom_segment(aes(xend = off_estimate,
+                   yend = def_estimate,
+                   color = team)) +
+  geom_nfl_logos(aes(x = off_estimate,
+                     y = def_estimate,
+                     team_abbr = team),
                  width = 0.05) +
   scale_y_reverse(breaks = seq(4.0, 6.0, by = 0.2),
                   minor_breaks = NULL) +
   scale_x_continuous(breaks = seq(4.0, 6.0, by = 0.2),
                      minor_breaks = NULL) +
+  scale_color_nfl() +
+  labs(x = "Offensive Yards Per Play",
+       y = "Defensive Yards Per Play",
+       title = "Adjusted Yards Per Play",
+       subtitle = "The Plexiglass Principle Adaptively Applied Via Partial Pooling",
+       caption = "Data: nflfastR | Plot: nflplotR | Model: lme4") +
   theme_light()
+
+ggsave("nfl_2021_yards_per_play_pooling.png",
+       plot = p_pooling,
+       units = "in",
+       height = 5.25,
+       width = 5,
+       dpi = "retina")
 
 ```
 
-```{r scaled_plot, include=FALSE}
+![](nfl_2021_yards_per_play_pooling.png)
+
+```{r scaled_plot}
 
 scaled_df <- df %>%
   mutate(off_estimate = scale(off_estimate),
@@ -159,7 +180,25 @@ scaled_plot <- scaled_df %>%
                   minor_breaks = NULL) +
   scale_x_continuous(breaks = seq(-4, 4, by = 1),
                      minor_breaks = NULL) +
+  labs(title = "2021 NFL Yards Per Play Tiers",
+       subtitle = "Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage",
+       x = "(Scaled) Offensive Adjusted Yards Per Play",
+       y = "(Scaled) Defensive Adjusted Yards Per Play",
+       caption = "Data: nflfastR | Plot: nflplotR | Model: lme4") +
   theme_light()
+
+ggsave("nfl_2021_reg_season_per_play_tiers.png",
+       plot = scaled_plot,
+       units = "in",
+       height = 5.25,
+       width = 5,
+       dpi = "retina")
+
+```
+
+![](nfl_2021_reg_season_per_play_tiers.png)
+
+```{r ranking_plot}
 
 p_2021 <- scaled_df %>%
   ggplot(aes(x = percentile,
