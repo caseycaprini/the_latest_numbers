@@ -1512,6 +1512,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </div>
 
 <div class="d-article">
+<p>For this analysis, I will use the tidyverse, packages from the
+nflverse, and lme4 for the multilevel model.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1526,6 +1528,12 @@ Show code
 </div>
 </details>
 </div>
+<p>While penalty assessment is a bit arbitrary in the NFL, a lot of
+penalty yardage is earned by poor technique. Therefore, I’m considering
+net penalty yardage the same as yards gained or lost conventionally,
+irrespective of whether the down is replayed. This is a bit like
+preferring plate appearances for most analysis rather than at bats
+(since at bats exclude walks, scorer assessed sacrifices, etc.).</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1544,6 +1552,11 @@ Show code
 </div>
 </details>
 </div>
+<p>I don’t discount the role of “hidden yardage” or the value of special
+teams. For this effort, however, I’m confining the analysis to the
+offensive and defensive units, since they are on the field for most
+snaps. I’m also throwing out the low hanging fruit like spikes and
+kneels where the purpose of the down is not gain yardage.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1572,6 +1585,22 @@ Show code
 </div>
 </details>
 </div>
+<h2 id="the-advantage-of-a-multilevel-approach">The Advantage of a
+Multilevel Approach</h2>
+<p>Multilevel models have a number of advantages over simpler regression
+models. Importantly, multilevel models can make more realistic
+assumptions about the independence of observations in the data set.</p>
+<p>In the NFL yards per play context, it’s obvious that the quality of
+the defense faced matters when assessing the quality of an offense:
+gaining 5 yards/play against the league’s best defense is better than
+gaining 5 yards/play against the league’s worst defense. Simple averages
+and linear regression models, however, do not recognize this and value
+the 5 yards/play the same, regardless of opponent (the independence
+assumption).</p>
+<p>Random intercepts models are generally used as a baseline to compare
+more complicated multilevel models against. However, I’m going to use a
+random intercepts model as a method of averaging that recognizes
+opponent quality.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1683,10 +1712,14 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>scaled_df</span> <span class='op'>&lt;-</span> <span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>off_estimate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>off_estimate</span><span class='op'>)</span>,</span>
 <span>         def_estimate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>def_estimate</span><span class='op'>)</span>,</span>
-<span>         overall <span class='op'>=</span> <span class='op'>(</span><span class='va'>off_estimate</span> <span class='op'>+</span> <span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>*</span><span class='va'>def_estimate</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>         overall <span class='op'>=</span> <span class='op'>(</span><span class='va'>off_estimate</span> <span class='op'>+</span> <span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>*</span><span class='va'>def_estimate</span><span class='op'>)</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span>,</span>
+<span>         off_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>off_yards_per_play</span><span class='op'>)</span>,</span>
+<span>         def_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>def_yards_per_play</span><span class='op'>)</span>,</span>
+<span>         overall_raw <span class='op'>=</span> <span class='op'>(</span><span class='va'>off_yards_per_play</span> <span class='op'>+</span> <span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>*</span><span class='va'>def_yards_per_play</span><span class='op'>)</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span>,<span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/desc.html'>desc</a></span><span class='op'>(</span><span class='va'>overall</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>rank <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/ranking.html'>row_number</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
-<span>         percentile <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>pnorm</a></span><span class='op'>(</span><span class='va'>overall</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>         percentile <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>pnorm</a></span><span class='op'>(</span><span class='va'>overall</span><span class='op'>)</span>,</span>
+<span>         percentile_raw <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>pnorm</a></span><span class='op'>(</span><span class='va'>overall_raw</span><span class='op'>)</span><span class='op'>)</span></span>
 <span>  </span>
 <span><span class='va'>scaled_plot</span> <span class='op'>&lt;-</span> <span class='va'>scaled_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>off_estimate</span>,</span>
@@ -1733,12 +1766,21 @@ Show code
 <span>             linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_abline.html'>geom_vline</a></span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0.25</span>, <span class='fl'>0.5</span>, <span class='fl'>0.75</span>, <span class='fl'>1</span><span class='op'>)</span>,</span>
 <span>             color <span class='op'>=</span> <span class='st'>"dark gray"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_segment.html'>geom_segment</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>percentile</span>,</span>
+<span>                   xend <span class='op'>=</span> <span class='va'>percentile_raw</span>,</span>
+<span>                   y <span class='op'>=</span> <span class='va'>rank</span>,</span>
+<span>                   yend <span class='op'>=</span> <span class='va'>rank</span>,</span>
+<span>                   color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>percentile_raw</span>,</span>
+<span>                 color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/geom_nfl_logos.html'>geom_nfl_logos</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>team_abbr <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span>,</span>
-<span>                 width <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>                 width <span class='op'>=</span> <span class='fl'>0.05</span>,</span>
+<span>                 alpha <span class='op'>=</span> <span class='fl'>0.8</span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_x_continuous</a></span><span class='op'>(</span>minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
 <span>                     labels <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='va'><a href='https://scales.r-lib.org/reference/percent_format.html'>percent</a></span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_continuous.html'>scale_y_reverse</a></span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
 <span>                  minor_breaks <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/scale_nfl.html'>scale_color_nfl</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
 <span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"2021 NFL Regular Season Per Play Rankings"</span>,</span>
 <span>       subtitle <span class='op'>=</span> <span class='st'>"Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage"</span>,</span>

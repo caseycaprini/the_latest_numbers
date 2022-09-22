@@ -17,6 +17,8 @@ preview: nfl_2021_reg_season_per_play.png
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+For this analysis, I will use the tidyverse, packages from the nflverse, and lme4 for the multilevel model.
+
 ```{r libraries}
 
 library(tidyverse)
@@ -26,6 +28,8 @@ library(nflplotR)
 library(lme4)
 
 ```
+
+While penalty assessment is a bit arbitrary in the NFL, a lot of penalty yardage is earned by poor technique. Therefore, I'm considering net penalty yardage the same as yards gained or lost conventionally, irrespective of whether the down is replayed. This is a bit like preferring plate appearances for most analysis rather than at bats (since at bats exclude walks, scorer assessed sacrifices, etc.).
 
 ```{r penalty_yards}
 
@@ -40,6 +44,8 @@ penalty_yards_gained <- function(df){
 }
 
 ```
+
+I don't discount the role of "hidden yardage" or the value of special teams. For this effort, however, I'm confining the analysis to the offensive and defensive units, since they are on the field for most snaps. I'm also throwing out the low hanging fruit like spikes and kneels where the purpose of the down is not gain yardage.
 
 ```{r get_pbp_data, results=FALSE}
 
@@ -64,6 +70,14 @@ pbp_df <- nflfastR::load_pbp(2021) %>%
   penalty_yards_gained()
 
 ```
+
+## The Advantage of a Multilevel Approach
+
+Multilevel models have a number of advantages over simpler regression models. Importantly, multilevel models can make more realistic assumptions about the independence of observations in the data set.
+
+In the NFL yards per play context, it's obvious that the quality of the defense faced matters when assessing the quality of an offense: gaining 5 yards/play against the league's best defense is better than gaining 5 yards/play against the league's worst defense.  Simple averages and linear regression models, however, do not recognize this and value the 5 yards/play the same, regardless of opponent (the independence assumption).
+
+Random intercepts models are generally used as a baseline to compare more complicated multilevel models against. However, I'm going to use a random intercepts model as a method of averaging that recognizes opponent quality.
 
 ```{r calculate_unit_averages}
 
@@ -161,10 +175,14 @@ ggsave("nfl_2021_yards_per_play_pooling.png",
 scaled_df <- df %>%
   mutate(off_estimate = scale(off_estimate),
          def_estimate = scale(def_estimate),
-         overall = (off_estimate + (-1*def_estimate)/2)) %>%
+         overall = (off_estimate + (-1*def_estimate))/2,
+         off_yards_per_play = scale(off_yards_per_play),
+         def_yards_per_play = scale(def_yards_per_play),
+         overall_raw = (off_yards_per_play + (-1*def_yards_per_play))/2,) %>%
   arrange(desc(overall)) %>%
   mutate(rank = row_number(),
-         percentile = pnorm(overall))
+         percentile = pnorm(overall),
+         percentile_raw = pnorm(overall_raw))
   
 scaled_plot <- scaled_df %>%
   ggplot(aes(x = off_estimate,
@@ -208,12 +226,21 @@ p_2021 <- scaled_df %>%
              linetype = "dashed") +
   geom_vline(xintercept = c(0, 0.25, 0.5, 0.75, 1),
              color = "dark gray") +
+  geom_segment(aes(x = percentile,
+                   xend = percentile_raw,
+                   y = rank,
+                   yend = rank,
+                   color = team)) +
+  geom_point(aes(x = percentile_raw,
+                 color = team)) +
   geom_nfl_logos(aes(team_abbr = team),
-                 width = 0.05) +
+                 width = 0.05,
+                 alpha = 0.8) +
   scale_x_continuous(minor_breaks = NULL,
                      labels = scales::percent) +
   scale_y_reverse(breaks = NULL,
                   minor_breaks = NULL) +
+  scale_color_nfl() +
   theme_light() +
   labs(title = "2021 NFL Regular Season Per Play Rankings",
        subtitle = "Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage",
