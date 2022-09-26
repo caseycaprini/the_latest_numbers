@@ -17,19 +17,24 @@ preview: nfl_2021_reg_season_per_play.png
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-For this analysis, I will use the tidyverse, packages from the nflverse, and lme4 for the multilevel model.
+### Packages Used
 
-```{r libraries}
+I will use the tidyverse, packages from the nflverse, and lme4 for the multilevel model.
+
+```{r libraries, include=FALSE}
 
 library(tidyverse)
 library(nflfastR)
-library(nfltools)
 library(nflplotR)
 library(lme4)
 
 ```
 
-While penalty assessment is a bit arbitrary in the NFL, a lot of penalty yardage is earned by poor technique. Therefore, I'm considering net penalty yardage the same as yards gained or lost conventionally, irrespective of whether the down is replayed. This is a bit like preferring plate appearances for most analysis rather than at bats (since at bats exclude walks, scorer assessed sacrifices, etc.).
+## Intuition
+
+Yards per play...
+
+While penalty assessment is a bit arbitrary in the NFL, penalty yardage is earned by poor technique and related to the tactics employed. Therefore, net penalty yardage is considered just the same as yards gained or lost conventionally, even if the down is replayed. This is a bit like preferring plate appearances to at bats in baseball (since at bats exclude walks, scorer assessed sacrifices, etc.).
 
 ```{r penalty_yards}
 
@@ -45,7 +50,7 @@ penalty_yards_gained <- function(df){
 
 ```
 
-I don't discount the role of "hidden yardage" or the value of special teams. For this effort, however, I'm confining the analysis to the offensive and defensive units, since they are on the field for most snaps. I'm also throwing out the low hanging fruit like spikes and kneels where the purpose of the down is not gain yardage.
+Since they are on the field for most of the snaps in a game, analysis is confined to the offensive and defensive units. Plays spikes and kneels, where the purpose of the down is not gain yardage, are discarded.
 
 ```{r get_pbp_data, results=FALSE}
 
@@ -71,23 +76,79 @@ pbp_df <- nflfastR::load_pbp(2021) %>%
 
 ```
 
-## The Advantage of a Multilevel Approach
+## The Advantages of a Multilevel Approach
 
-Multilevel models have a number of advantages over simpler regression models. Importantly, multilevel models can make more realistic assumptions about the independence of observations in the data set.
+Random intercepts models are the simplest multilevel models and are generally used as a baseline for which to compare more complicated multilevel models against. Here, a random intercepts model is proposed as an improved averaging method.
 
-In the NFL yards per play context, it's obvious that the quality of the defense faced matters when assessing the quality of an offense: gaining 5 yards/play against the league's best defense is better than gaining 5 yards/play against the league's worst defense.  Simple averages and linear regression models, however, do not recognize this and value the 5 yards/play the same, regardless of opponent (the independence assumption).
+Multilevel models have a number of advantages over simpler regression models. Importantly, multilevel models make more realistic assumptions about the independence of observations in the data set.
 
-Random intercepts models are generally used as a baseline to compare more complicated multilevel models against. However, I'm going to use a random intercepts model as a method of averaging that recognizes opponent quality.
+In the context of NFL yards per play, gaining 5 yards/play against the league's best defense reflects more positively on an offense than gaining 5 yards/play against the league's worst defense. Simple averages and linear regression models, however, do not recognize this; the 5 yards/play the same, regardless of opponent, are "valued" the same (the independence assumption).
+
+Multilevel models also provide regularized estimates. It is expected that offenses will be systematically different from one another in their yards/play output (i.e., clustering by offense is expected). However, the yards/play output of one offense is informative for others.  If I asked you how many yards/play the Dallas Cowboys offense produced in 2021, your guess would probably improve if I told you the answer for the Carolina Panthers.  Similarly, offenses in 2022 are more similar to the one another than they are to offenses in 1995.
+
+
+
+### Partial Pooling
+
+```{r off_unit_averages}
+
+avg_yards_per_play <- pbp_df %>%
+  summarize(mean = mean(yards_gained)) %>%
+  pull(mean)
+
+off_avg_df <- pbp_df %>%
+  group_by(posteam) %>%
+  summarize(off_yards_per_play = mean(yards_gained),
+            off_sd = sd(yards_gained),
+            off_n = n(),
+            .groups = "drop") %>%
+  mutate(off_se = off_sd/sqrt(off_n),
+         dist_from_avg = off_yards_per_play - avg_yards_per_play) %>%
+  rename(team = posteam)
+
+off_rand_int_mod <- lmer(yards_gained ~ 1 + (1|posteam),
+                         data = pbp_df)
+
+summary(off_rand_int_mod)
+
+off_rand_int <- coef(off_rand_int_mod)$posteam %>%
+  rownames_to_column(var = "team") %>%
+  rename(off_estimate = `(Intercept)`)
+
+off_avg_df <- off_avg_df %>%
+  left_join(off_rand_int,
+            by = "team") %>%
+  mutate(estimate_adjust = off_estimate - off_yards_per_play)
+
+off_avg_df %>%
+  ggplot(aes(x = dist_from_avg,
+             y = estimate_adjust)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_point(aes(color = team)) +
+  scale_color_nfl() +
+  theme_light()
+
+rm(off_avg_df,
+   def_avg_df)
+
+```
 
 ```{r calculate_unit_averages}
 
 off_avg_df <- pbp_df %>%
   group_by(posteam) %>%
-  summarize(off_yards_per_play = mean(yards_gained))
+  summarize(off_yards_per_play = mean(yards_gained),
+            off_sd = sd(yards_gained),
+            off_n = n()) %>%
+  mutate(off_se = off_sd/sqrt(off_n))
 
 def_avg_df <- pbp_df %>%
   group_by(defteam) %>%
-  summarize(def_yards_per_play = mean(yards_gained))
+  summarize(def_yards_per_play = mean(yards_gained),
+            def_sd = sd(yards_gained),
+            def_n = n()) %>%
+  mutate(def_se = def_sd/sqrt(def_n))
 
 unit_avg <- left_join(off_avg_df,
                       def_avg_df,
@@ -120,7 +181,9 @@ df <- left_join(unit_avg,
                 unit_est,
                 by = c("team" = "team")) %>%
   mutate(def_adjustment = def_estimate - def_yards_per_play,
-         off_adjustment = off_estimate - off_yards_per_play)
+         off_adjustment = off_estimate - off_yards_per_play,
+         def_dist_from_avg = def_yards_per_play - avg_yards_per_play,
+         off_dist_from_avg = off_yards_per_play - avg_yards_per_play)
 
 yards_per_play <- mean(pbp_df$yards_gained)
 
@@ -131,6 +194,35 @@ rm(off_rand_int,
    pbp_df)
 
 ```
+
+```{r}
+
+df %>%
+  select(team, off_estimate, off_adjustment, off_se, def_estimate, def_adjustment, def_se) %>%
+  knitr::kable(digits = 2)
+
+summary(rand_int)
+
+df %>%
+  ggplot(aes(x = off_dist_from_avg,
+             y = off_adjustment)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_point(aes(color = team)) +
+  scale_color_nfl() +
+  theme_light()
+
+df %>%
+  ggplot(aes(x = def_dist_from_avg,
+             y = def_adjustment)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_point(aes(color = team)) +
+  scale_color_nfl() +
+  theme_light()
+
+```
+
 
 ```{r plot}
 

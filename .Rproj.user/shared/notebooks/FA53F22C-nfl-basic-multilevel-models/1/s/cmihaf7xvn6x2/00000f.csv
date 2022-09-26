@@ -1,0 +1,5 @@
+"0","rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam),
+                 data = pbp_df)
+"
+"2","boundary (singular) fit: see help('isSingular')
+"

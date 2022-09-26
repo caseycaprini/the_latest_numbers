@@ -118,7 +118,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["nfl-basic-multilevel-models_files/anchor-4.2.2/anchor.min.js","nfl-basic-multilevel-models_files/bowser-1.9.3/bowser.min.js","nfl-basic-multilevel-models_files/distill-2.2.21/template.v2.js","nfl-basic-multilevel-models_files/figure-html5/plot-1.png","nfl-basic-multilevel-models_files/figure-html5/scaled_plot-1.png","nfl-basic-multilevel-models_files/header-attrs-2.14/header-attrs.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.map","nfl-basic-multilevel-models_files/popper-2.6.0/popper.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-bundle.umd.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-light-border.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.umd.min.js","nfl-basic-multilevel-models_files/webcomponents-2.0.0/webcomponents.js","nfl_2021_reg_season_per_play.png","nfl_2021_reg_season_per_play_tiers.png","nfl_2021_yards_per_play_pooling.png"]}
+  {"type":"character","attributes":{},"value":["nfl-basic-multilevel-models_files/anchor-4.2.2/anchor.min.js","nfl-basic-multilevel-models_files/bowser-1.9.3/bowser.min.js","nfl-basic-multilevel-models_files/distill-2.2.21/template.v2.js","nfl-basic-multilevel-models_files/figure-html5/get_pbp_data_2-1.png","nfl-basic-multilevel-models_files/figure-html5/off_unit_averages-1.png","nfl-basic-multilevel-models_files/figure-html5/off_unit_averages-2.png","nfl-basic-multilevel-models_files/figure-html5/off_unit_averages-3.png","nfl-basic-multilevel-models_files/figure-html5/plot-1.png","nfl-basic-multilevel-models_files/figure-html5/scaled_plot-1.png","nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-1-1.png","nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-1-2.png","nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-2-1.png","nfl-basic-multilevel-models_files/header-attrs-2.14/header-attrs.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.js","nfl-basic-multilevel-models_files/jquery-3.6.0/jquery-3.6.0.min.map","nfl-basic-multilevel-models_files/popper-2.6.0/popper.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-bundle.umd.min.js","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy-light-border.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.css","nfl-basic-multilevel-models_files/tippy-6.2.7/tippy.umd.min.js","nfl-basic-multilevel-models_files/webcomponents-2.0.0/webcomponents.js","nfl_2021_reg_season_per_play.png","nfl_2021_reg_season_per_play_tiers.png","nfl_2021_yards_per_play_pooling.png"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1512,28 +1512,17 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </div>
 
 <div class="d-article">
-<p>For this analysis, I will use the tidyverse, packages from the
-nflverse, and lme4 for the multilevel model.</p>
-<div class="layout-chunk" data-layout="l-body">
-<details>
-<summary>
-Show code
-</summary>
-<div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
-<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://www.nflfastr.com/'>nflfastR</a></span><span class='op'>)</span></span>
-<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>nfltools</span><span class='op'>)</span></span>
-<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://nflplotr.nflverse.com'>nflplotR</a></span><span class='op'>)</span></span>
-<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/lme4/lme4/'>lme4</a></span><span class='op'>)</span></span></code></pre>
-</div>
-</details>
-</div>
-<p>While penalty assessment is a bit arbitrary in the NFL, a lot of
-penalty yardage is earned by poor technique. Therefore, I’m considering
-net penalty yardage the same as yards gained or lost conventionally,
-irrespective of whether the down is replayed. This is a bit like
-preferring plate appearances for most analysis rather than at bats
-(since at bats exclude walks, scorer assessed sacrifices, etc.).</p>
+<h3 id="packages-used">Packages Used</h3>
+<p>I will use the tidyverse, packages from the nflverse, and lme4 for
+the multilevel model.</p>
+<h2 id="intuition">Intuition</h2>
+<p>Yards per play…</p>
+<p>While penalty assessment is a bit arbitrary in the NFL, penalty
+yardage is earned by poor technique and related to the tactics employed.
+Therefore, net penalty yardage is considered just the same as yards
+gained or lost conventionally, even if the down is replayed. This is a
+bit like preferring plate appearances to at bats in baseball (since at
+bats exclude walks, scorer assessed sacrifices, etc.).</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1552,11 +1541,10 @@ Show code
 </div>
 </details>
 </div>
-<p>I don’t discount the role of “hidden yardage” or the value of special
-teams. For this effort, however, I’m confining the analysis to the
-offensive and defensive units, since they are on the field for most
-snaps. I’m also throwing out the low hanging fruit like spikes and
-kneels where the purpose of the down is not gain yardage.</p>
+<p>Since they are on the field for most of the snaps in a game, analysis
+is confined to the offensive and defensive units. Plays spikes and
+kneels, where the purpose of the down is not gain yardage, are
+discarded.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1585,22 +1573,110 @@ Show code
 </div>
 </details>
 </div>
-<h2 id="the-advantage-of-a-multilevel-approach">The Advantage of a
+<h2 id="the-advantages-of-a-multilevel-approach">The Advantages of a
 Multilevel Approach</h2>
+<p>Random intercepts models are the simplest multilevel models and are
+generally used as a baseline for which to compare more complicated
+multilevel models against. Here, a random intercepts model is proposed
+as an improved averaging method.</p>
 <p>Multilevel models have a number of advantages over simpler regression
-models. Importantly, multilevel models can make more realistic
-assumptions about the independence of observations in the data set.</p>
-<p>In the NFL yards per play context, it’s obvious that the quality of
-the defense faced matters when assessing the quality of an offense:
-gaining 5 yards/play against the league’s best defense is better than
+models. Importantly, multilevel models make more realistic assumptions
+about the independence of observations in the data set.</p>
+<p>In the context of NFL yards per play, gaining 5 yards/play against
+the league’s best defense reflects more positively on an offense than
 gaining 5 yards/play against the league’s worst defense. Simple averages
-and linear regression models, however, do not recognize this and value
-the 5 yards/play the same, regardless of opponent (the independence
-assumption).</p>
-<p>Random intercepts models are generally used as a baseline to compare
-more complicated multilevel models against. However, I’m going to use a
-random intercepts model as a method of averaging that recognizes
-opponent quality.</p>
+and linear regression models, however, do not recognize this; the 5
+yards/play the same, regardless of opponent, are “valued” the same (the
+independence assumption).</p>
+<p>Multilevel models also provide regularized estimates. It is expected
+that offenses will be systematically different from one another in their
+yards/play output (i.e., clustering by offense is expected). However,
+the yards/play output of one offense is informative for others. If I
+asked you how many yards/play the Dallas Cowboys offense produced in
+2021, your guess would probably improve if I told you the answer for the
+Carolina Panthers. Similarly, offenses in 2022 are more similar to the
+one another than they are to offenses in 1995.</p>
+<h3 id="partial-pooling">Partial Pooling</h3>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>avg_yards_per_play</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/pull.html'>pull</a></span><span class='op'>(</span><span class='va'>mean</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>off_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>posteam</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>off_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            off_sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            off_n <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>            .groups <span class='op'>=</span> <span class='st'>"drop"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>off_se <span class='op'>=</span> <span class='va'>off_sd</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='va'>off_n</span><span class='op'>)</span>,</span>
+<span>         dist_from_avg <span class='op'>=</span> <span class='va'>off_yards_per_play</span> <span class='op'>-</span> <span class='va'>avg_yards_per_play</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>team <span class='op'>=</span> <span class='va'>posteam</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>off_rand_int_mod</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/lme4/man/lmer.html'>lmer</a></span><span class='op'>(</span><span class='va'>yards_gained</span> <span class='op'>~</span> <span class='fl'>1</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span><span class='op'>|</span><span class='va'>posteam</span><span class='op'>)</span>,</span>
+<span>                         data <span class='op'>=</span> <span class='va'>pbp_df</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>off_rand_int_mod</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<pre><code>Linear mixed model fit by REML [&#39;lmerMod&#39;]
+Formula: yards_gained ~ 1 + (1 | posteam)
+   Data: pbp_df
+
+REML criterion at convergence: 260112.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.7732 -0.5728 -0.2081  0.3293  9.8621 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ posteam  (Intercept)  0.1446  0.3802  
+ Residual             75.4993  8.6890  
+Number of obs: 36313, groups:  posteam, 32
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  5.12971    0.08124   63.14</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>off_rand_int</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>off_rand_int_mod</span><span class='op'>)</span><span class='op'>$</span><span class='va'>posteam</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/rownames.html'>rownames_to_column</a></span><span class='op'>(</span>var <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>off_estimate <span class='op'>=</span> <span class='va'>`(Intercept)`</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>off_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>off_avg_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>off_rand_int</span>,</span>
+<span>            by <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>estimate_adjust <span class='op'>=</span> <span class='va'>off_estimate</span> <span class='op'>-</span> <span class='va'>off_yards_per_play</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>off_avg_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>dist_from_avg</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>estimate_adjust</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span>,</span>
+<span>              se <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/scale_nfl.html'>scale_color_nfl</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<img src="nfl-basic-multilevel-models_files/figure-html5/off_unit_averages-1.png" width="624" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/rm.html'>rm</a></span><span class='op'>(</span><span class='va'>off_avg_df</span>,</span>
+<span>   <span class='va'>def_avg_df</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -1609,11 +1685,17 @@ Show code
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>off_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>posteam</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>off_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>off_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            off_sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            off_n <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>off_se <span class='op'>=</span> <span class='va'>off_sd</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='va'>off_n</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>def_avg_df</span> <span class='op'>&lt;-</span> <span class='va'>pbp_df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>defteam</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>def_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>def_yards_per_play <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            def_sd <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>yards_gained</span><span class='op'>)</span>,</span>
+<span>            def_n <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>def_se <span class='op'>=</span> <span class='va'>def_sd</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='va'>def_n</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>unit_avg</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>left_join</a></span><span class='op'>(</span><span class='va'>off_avg_df</span>,</span>
 <span>                      <span class='va'>def_avg_df</span>,</span>
@@ -1650,7 +1732,9 @@ Show code
 <span>                <span class='va'>unit_est</span>,</span>
 <span>                by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"team"</span> <span class='op'>=</span> <span class='st'>"team"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>def_adjustment <span class='op'>=</span> <span class='va'>def_estimate</span> <span class='op'>-</span> <span class='va'>def_yards_per_play</span>,</span>
-<span>         off_adjustment <span class='op'>=</span> <span class='va'>off_estimate</span> <span class='op'>-</span> <span class='va'>off_yards_per_play</span><span class='op'>)</span></span>
+<span>         off_adjustment <span class='op'>=</span> <span class='va'>off_estimate</span> <span class='op'>-</span> <span class='va'>off_yards_per_play</span>,</span>
+<span>         def_dist_from_avg <span class='op'>=</span> <span class='va'>def_yards_per_play</span> <span class='op'>-</span> <span class='va'>avg_yards_per_play</span>,</span>
+<span>         off_dist_from_avg <span class='op'>=</span> <span class='va'>off_yards_per_play</span> <span class='op'>-</span> <span class='va'>avg_yards_per_play</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>yards_per_play</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>pbp_df</span><span class='op'>$</span><span class='va'>yards_gained</span><span class='op'>)</span></span>
 <span></span>
@@ -1661,6 +1745,390 @@ Show code
 <span>   <span class='va'>pbp_df</span><span class='op'>)</span></span></code></pre>
 </div>
 </details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>team</span>, <span class='va'>off_estimate</span>, <span class='va'>off_adjustment</span>, <span class='va'>off_se</span>, <span class='va'>def_estimate</span>, <span class='va'>def_adjustment</span>, <span class='va'>def_se</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'>knitr</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>digits <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 20%" />
+<col style="width: 9%" />
+<col style="width: 17%" />
+<col style="width: 20%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">team</th>
+<th style="text-align: right;">off_estimate</th>
+<th style="text-align: right;">off_adjustment</th>
+<th style="text-align: right;">off_se</th>
+<th style="text-align: right;">def_estimate</th>
+<th style="text-align: right;">def_adjustment</th>
+<th style="text-align: right;">def_se</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ARI</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.04</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ATL</td>
+<td style="text-align: right;">4.98</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.18</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.21</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BAL</td>
+<td style="text-align: right;">5.10</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">5.29</td>
+<td style="text-align: right;">-0.31</td>
+<td style="text-align: right;">0.31</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BUF</td>
+<td style="text-align: right;">5.26</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">4.89</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CAR</td>
+<td style="text-align: right;">4.58</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">5.01</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CHI</td>
+<td style="text-align: right;">4.81</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.08</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CIN</td>
+<td style="text-align: right;">5.39</td>
+<td style="text-align: right;">-0.16</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">5.11</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CLE</td>
+<td style="text-align: right;">5.09</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">5.00</td>
+<td style="text-align: right;">0.22</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DAL</td>
+<td style="text-align: right;">5.42</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.09</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DEN</td>
+<td style="text-align: right;">5.11</td>
+<td style="text-align: right;">-0.03</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.06</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DET</td>
+<td style="text-align: right;">4.89</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.34</td>
+<td style="text-align: right;">-0.45</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GB</td>
+<td style="text-align: right;">5.49</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">5.16</td>
+<td style="text-align: right;">-0.07</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HOU</td>
+<td style="text-align: right;">4.60</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.36</td>
+<td style="text-align: right;">-0.37</td>
+<td style="text-align: right;">0.27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IND</td>
+<td style="text-align: right;">5.26</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">5.17</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">JAX</td>
+<td style="text-align: right;">4.78</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">5.19</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KC</td>
+<td style="text-align: right;">5.49</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">-0.27</td>
+<td style="text-align: right;">0.27</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LA</td>
+<td style="text-align: right;">5.57</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">5.01</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LAC</td>
+<td style="text-align: right;">5.38</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.21</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LV</td>
+<td style="text-align: right;">5.33</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">5.07</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.23</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MIA</td>
+<td style="text-align: right;">4.66</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">5.09</td>
+<td style="text-align: right;">0.12</td>
+<td style="text-align: right;">0.27</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MIN</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">5.23</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NE</td>
+<td style="text-align: right;">5.32</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.05</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NO</td>
+<td style="text-align: right;">4.81</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">5.01</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">0.27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NYG</td>
+<td style="text-align: right;">4.64</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">5.08</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.22</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NYJ</td>
+<td style="text-align: right;">4.99</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">5.40</td>
+<td style="text-align: right;">-0.37</td>
+<td style="text-align: right;">0.27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PHI</td>
+<td style="text-align: right;">5.29</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.04</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PIT</td>
+<td style="text-align: right;">4.73</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">5.05</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SEA</td>
+<td style="text-align: right;">5.38</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">5.09</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SF</td>
+<td style="text-align: right;">5.54</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">5.07</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TB</td>
+<td style="text-align: right;">5.68</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">5.15</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TEN</td>
+<td style="text-align: right;">4.96</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">5.12</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WAS</td>
+<td style="text-align: right;">5.07</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">-0.28</td>
+<td style="text-align: right;">0.26</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>rand_int</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<pre><code>Linear mixed model fit by REML [&#39;lmerMod&#39;]
+Formula: yards_gained ~ 1 + (1 | posteam) + (1 | defteam)
+   Data: pbp_df
+
+REML criterion at convergence: 260109.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.8038 -0.5760 -0.2107  0.3237  9.8735 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ posteam  (Intercept)  0.14403 0.3795  
+ defteam  (Intercept)  0.03766 0.1941  
+ Residual             75.46417 8.6870  
+Number of obs: 36313, groups:  posteam, 32; defteam, 32
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  5.12877    0.08809   58.22</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>off_dist_from_avg</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>off_adjustment</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span>,</span>
+<span>              se <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/scale_nfl.html'>scale_color_nfl</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<img src="nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-1-1.png" width="624" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>def_dist_from_avg</span>,</span>
+<span>             y <span class='op'>=</span> <span class='va'>def_adjustment</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_smooth.html'>geom_smooth</a></span><span class='op'>(</span>method <span class='op'>=</span> <span class='st'>"lm"</span>,</span>
+<span>              se <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>team</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://nflplotr.nflverse.com/reference/scale_nfl.html'>scale_color_nfl</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_light</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<p><img src="nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-1-2.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -1798,7 +2266,7 @@ Show code
 </details>
 </div>
 <p><img src="nfl_2021_reg_season_per_play.png" /></p>
-<div class="sourceCode" id="cb1"><pre
+<div class="sourceCode" id="cb3"><pre
 class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
