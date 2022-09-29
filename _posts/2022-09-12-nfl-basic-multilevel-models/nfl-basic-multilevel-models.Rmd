@@ -27,10 +27,11 @@ library(tidyverse)
 library(nflfastR)
 library(nflplotR)
 library(lme4)
+library(patchwork)
 
 ```
 
-## Intuition
+## Why Yards/Play Differential?
 
 Yards per play...
 
@@ -78,159 +79,228 @@ pbp_df <- nflfastR::load_pbp(2021) %>%
 
 ## The Advantages of a Multilevel Approach
 
-Random intercepts models are the simplest multilevel models and are generally used as a baseline for which to compare more complicated multilevel models against. Here, a random intercepts model is proposed as an improved averaging method.
+Multilevel models have a number of advantages over simpler regression models. Random intercepts models are the simplest multilevel models and are generally used as a baseline for which to compare more complicated multilevel models against. Here, a random intercepts model is proposed as an improvement on averaging.
 
-Multilevel models have a number of advantages over simpler regression models. Importantly, multilevel models make more realistic assumptions about the independence of observations in the data set.
+### Realistic Assumptions About Independence
 
-In the context of NFL yards per play, gaining 5 yards/play against the league's best defense reflects more positively on an offense than gaining 5 yards/play against the league's worst defense. Simple averages and linear regression models, however, do not recognize this; the 5 yards/play the same, regardless of opponent, are "valued" the same (the independence assumption).
+Importantly, multilevel models make more realistic assumptions about the independence of observations in a data set.  In the NFL, context rightly shapes the meaning we derive from statistics.  For example, gaining 5 yards/play against the league's best defense reflects more positively on an offense than gaining 5 yards/play against the league's worst defense. For some games, weather conditions severely depress offense (think the Bills/Patriots game last season). Averages and simpler regression models, however, do not recognize any such context; all observations are assumed to be independent.
 
-Multilevel models also provide regularized estimates. It is expected that offenses will be systematically different from one another in their yards/play output (i.e., clustering by offense is expected). However, the yards/play output of one offense is informative for others.  If I asked you how many yards/play the Dallas Cowboys offense produced in 2021, your guess would probably improve if I told you the answer for the Carolina Panthers.  Similarly, offenses in 2022 are more similar to the one another than they are to offenses in 1995.
+Clustering is expected in yards/play data, along a number of different dimensions. Consider the following examples.
 
+* Two offenses playing in inclement weather are likely to be more similar to one another for that game than the other NFL offenses playing in more typical weather conditions that week.
+* Offenses in 2022 are likely to be more similar to the one another than they are to offenses in 1995.
 
+Multilevel models take advantage of these dependencies in the structure of the data.
 
-### Partial Pooling
+### Paritial Pooling and Regularization
 
-```{r off_unit_averages}
+The observations in one cluster of our data are also informative for other clusters. This may be less intuitive, but consider the following.
 
+* If I asked you how many yards/play the Dallas Cowboys offense produced in 2021, your guess would probably improve if I told you the answer for the Carolina Panthers.
+* If I asked you how many yards/play the Green Bay Packers defense surrendered in 2021, your guess would probably improve if I told you how many yards/play in all NFL games played that season.
+
+Sharing of information between the results of all plays across the league, regardless of cluster, and the individual clusters in the data provides regularized estimates. The regularization (or shrinkage) performed by multilevel models tempers the conclusions drawn in each cluster of the data by considering all clusters, thus minimizing the adverse affects of overfitting (roughly, taking the noise in the sample too seriously). Regularization can thus improve out-of-sample prediction.
+
+Readers of the Football Outsiders may be familiar with the Plexiglass Principle, which roughly states that a big improvement (or decline) in performance will on average be followed by a relapse (or bounce back). The Plexiglass Principle was coined by the legendary baseball sabermetrician Bill James, who later renamed it the Whirlpool Principle: "All teams are drawn forcefully toward the center. Most of the teams which had winning records in 1982 will decline in 1983; most of the teams which had losing records in 1982 will improve in 1983." ^[Quotation and background repeated from this [excellent blog post](http://baseballanalysts.com/archives/2004/09/abstracts_from_18.php).] 
+
+Traditional statisticians call this the Paradox of Regression to the Mean.  Exceptionally good performance is likely the result of a combination of high ability and good luck; subsequent performance is likely to be better than average but not as good as the previous exceptional outcome. ^[See Section 6.5 in [Regression and Other Stories](https://avehtari.github.io/ROS-Examples/) by Gelman, Hill, and Vehtari, from which this summary of regression to the mean is adapted.]
+
+## Partial Pooling: An Intuitive Approach
+
+How much shrinkage is appropriate? We begin by building a league-wide normal distribution centered on the mean yards gained for all observations in the data set.  The standard deviation of this distribution is the standard error of this mean, assuming n = 1125 (a nominal number of plays for a team's offensive or defensive unit that is representative for the 2021 season).  We'll plot this curve as a league-wide nominal distribution, since its parameters are estimated considering all plays in the 2021 NFL regular season.
+
+Next, we plot the average yards/play calculated for each offense and defense under the league-wide nominal distribution.  This allows us to compare the distribution of offensive unit averages and the distribution of the defensive unit averages against all plays.
+
+```{r nfl_vs_unit_averages, results=FALSE}
+# Estimate NFL Distribution using mean for all plays...
 avg_yards_per_play <- pbp_df %>%
   summarize(mean = mean(yards_gained)) %>%
   pull(mean)
 
+# and standard error of the mean, which assumes
+# 1125 plays in a season for a unit.
+sd_yards_per_play <- pbp_df %>%
+  summarize(sd = sd(yards_gained)) %>%
+  pull(sd)
+se_unit <- sd_yards_per_play/sqrt(1125)
+
+# Build data frame to plot estimated distribution
+ypp <- seq(0, 10, by = 0.01)
+d_ypp <- dnorm(ypp, mean = avg_yards_per_play, sd = se_unit)
+df_ypp <- data.frame(ypp, d_ypp)
+rm(ypp, d_ypp)
+
+# Calculate (Raw, Unadjusted) Unit Averages
 off_avg_df <- pbp_df %>%
   group_by(posteam) %>%
   summarize(off_yards_per_play = mean(yards_gained),
-            off_sd = sd(yards_gained),
-            off_n = n(),
-            .groups = "drop") %>%
-  mutate(off_se = off_sd/sqrt(off_n),
-         dist_from_avg = off_yards_per_play - avg_yards_per_play) %>%
+            off_n = n()) %>%
   rename(team = posteam)
+def_avg_df <- pbp_df %>%
+  group_by(defteam) %>%
+  summarize(def_yards_per_play = mean(yards_gained),
+            def_n = n()) %>%
+  rename(team = defteam)
 
-off_rand_int_mod <- lmer(yards_gained ~ 1 + (1|posteam),
-                         data = pbp_df)
 
-summary(off_rand_int_mod)
+# Plot unit averages against league-wide estimated distribution
+# Stack of plots will show much greater spread among offenses
+# compared to defenses.
+p_top <- df_ypp %>%
+  ggplot(aes(x = ypp,
+             y = d_ypp)) +
+  geom_vline(xintercept = c(avg_yards_per_play,
+                            avg_yards_per_play - 2*se_unit,
+                            avg_yards_per_play + 2*se_unit),
+             color = "dark gray",
+             linetype = "dashed") +
+  geom_line() +
+  geom_point(data = off_avg_df,
+             aes(x = off_yards_per_play,
+                 y = 0,
+                 color = team)) +
+  scale_color_nfl() +
+  theme_light() +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_continuous(minor_breaks = NULL) +
+  coord_cartesian(xlim = c(4.0, 6.25)) +
+  labs(x = "Offensive Yards Per Play",
+       y = "Density",
+       title = "Team Unit Averages Compared to NFL Distribution",
+       subtitle = "NFL Standard Error Assumes 1125 Plays for Unit")
+p_bottom <- df_ypp %>%
+  ggplot(aes(x = ypp,
+             y = d_ypp)) +
+  geom_vline(xintercept = c(avg_yards_per_play,
+                            avg_yards_per_play - 2*se_unit,
+                            avg_yards_per_play + 2*se_unit),
+             color = "dark gray",
+             linetype = "dashed") +
+  geom_line() +
+  geom_point(data = def_avg_df,
+             aes(x = def_yards_per_play,
+                 y = 0,
+                 color = team)) +
+  scale_color_nfl() +
+  theme_light() +
+  scale_x_continuous(minor_breaks = NULL) +
+  scale_y_continuous(minor_breaks = NULL) +
+  coord_cartesian(xlim = c(4.0, 6.25)) +
+  labs(x = "Defensive Yards Per Play",
+       y = "Density")
+library(patchwork)
+p_units <- p_top / p_bottom
+ggsave("nfl_2021_unit_dist.png",
+       plot = p_units,
+       height = 5.25,
+       width = 5,
+       units = "in",
+       dpi = "retina")
+```
 
-off_rand_int <- coef(off_rand_int_mod)$posteam %>%
+![](nfl_2021_unit_dist.png)
+
+A few observations:
+
+* About 9 or 10 offenses (of 32) are greater than 2 standard errors from the league wide mean (i.e., outside of gray dashed lines), whereas about 2 would be expected (0.05 * 32 = about 2). This suggests that the offense averages are too greatly dispersed.
+* The defensive average are much more closely packed about the league wide mean than the offensive averages. This suggests that significant shrinkage of remote defensive values is appropriate, since their is relatively less spread in defensive averages than offensive averages and the league-wide nominal distribution.
+
+```{r rand_int_model}
+mod_rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam) + (1|game_id),
+                     data = pbp_df)
+
+
+off_rand_int <- coef(mod_rand_int)$posteam %>%
   rownames_to_column(var = "team") %>%
   rename(off_estimate = `(Intercept)`)
 
 off_avg_df <- off_avg_df %>%
   left_join(off_rand_int,
             by = "team") %>%
-  mutate(estimate_adjust = off_estimate - off_yards_per_play)
+  mutate(off_estimate_adjust = off_estimate - off_yards_per_play)
 
-off_avg_df %>%
-  ggplot(aes(x = dist_from_avg,
-             y = estimate_adjust)) +
-  geom_smooth(method = "lm",
-              se = FALSE) +
-  geom_point(aes(color = team)) +
-  scale_color_nfl() +
-  theme_light()
 
-rm(off_avg_df,
-   def_avg_df)
-
-```
-
-```{r calculate_unit_averages}
-
-off_avg_df <- pbp_df %>%
-  group_by(posteam) %>%
-  summarize(off_yards_per_play = mean(yards_gained),
-            off_sd = sd(yards_gained),
-            off_n = n()) %>%
-  mutate(off_se = off_sd/sqrt(off_n))
-
-def_avg_df <- pbp_df %>%
-  group_by(defteam) %>%
-  summarize(def_yards_per_play = mean(yards_gained),
-            def_sd = sd(yards_gained),
-            def_n = n()) %>%
-  mutate(def_se = def_sd/sqrt(def_n))
-
-unit_avg <- left_join(off_avg_df,
-                      def_avg_df,
-                      by = c("posteam" = "defteam")) %>%
-  rename(team = posteam)
-
-rm(off_avg_df,
-   def_avg_df)
-
-```
-
-```{r calculate_unit_rand_int}
-
-rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam),
-                 data = pbp_df)
-
-off_rand_int <- coef(rand_int)$posteam %>%
-  rownames_to_column(var = "team") %>%
-  rename(off_estimate = `(Intercept)`)
-
-def_rand_int <- coef(rand_int)$defteam %>%
+def_rand_int <- coef(mod_rand_int)$defteam %>%
   rownames_to_column(var = "team") %>%
   rename(def_estimate = `(Intercept)`)
 
-unit_est <- left_join(off_rand_int,
-                      def_rand_int,
-                      by = c("team" = "team"))
+def_avg_df <- def_avg_df %>%
+  left_join(def_rand_int,
+            by = "team") %>%
+  mutate(def_estimate_adjust = def_estimate - def_yards_per_play)
 
-df <- left_join(unit_avg,
-                unit_est,
-                by = c("team" = "team")) %>%
-  mutate(def_adjustment = def_estimate - def_yards_per_play,
-         off_adjustment = off_estimate - off_yards_per_play,
-         def_dist_from_avg = def_yards_per_play - avg_yards_per_play,
-         off_dist_from_avg = off_yards_per_play - avg_yards_per_play)
+est_df <- left_join(off_avg_df,
+                    def_avg_df,
+                    by = "team") %>%
+  mutate(combined_estimate = off_estimate - def_estimate) %>%
+  arrange(desc(combined_estimate)) %>%
+  mutate(estimate_rank = row_number(),
+         percentile_estimate = scale(combined_estimate)) %>%
+  mutate(percentile_estimate = pnorm(percentile_estimate))
 
-yards_per_play <- mean(pbp_df$yards_gained)
+lm(off_estimate ~ off_yards_per_play,
+   data = est_df) %>%
+  coefficients()
 
-rm(off_rand_int,
-   def_rand_int,
-   unit_avg,
-   unit_est,
-   pbp_df)
+est_df %>%
+  ggplot(aes(x = off_yards_per_play,
+             y = off_estimate)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_text(aes(color = team,
+                label = team)) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(0, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_fixed(xlim = c(4.2, 6.0),
+              ylim = c(4.4, 5.8))
+
+lm(def_estimate ~ def_yards_per_play,
+   data = est_df) %>%
+  coefficients()
+
+est_df %>%
+  ggplot(aes(x = def_yards_per_play,
+             y = def_estimate)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_text(aes(color = team,
+                label = team)) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(0, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_fixed(xlim = c(4.2, 6.0),
+              ylim = c(4.7, 5.5))
+
+rm(off_avg_df,
+   def_avg_df)
 
 ```
 
+
 ```{r}
 
-df %>%
-  select(team, off_estimate, off_adjustment, off_se, def_estimate, def_adjustment, def_se) %>%
+est_df %>%
   knitr::kable(digits = 2)
 
-summary(rand_int)
-
-df %>%
-  ggplot(aes(x = off_dist_from_avg,
-             y = off_adjustment)) +
-  geom_smooth(method = "lm",
-              se = FALSE) +
-  geom_point(aes(color = team)) +
-  scale_color_nfl() +
-  theme_light()
-
-df %>%
-  ggplot(aes(x = def_dist_from_avg,
-             y = def_adjustment)) +
-  geom_smooth(method = "lm",
-              se = FALSE) +
-  geom_point(aes(color = team)) +
-  scale_color_nfl() +
-  theme_light()
+summary(mod_rand_int)
 
 ```
 
 
 ```{r plot}
 
-p_pooling <- df %>%
+p_pooling <- est_df %>%
   ggplot(aes(x = off_yards_per_play,
              y = def_yards_per_play)) +
-  geom_hline(yintercept = yards_per_play) +
-  geom_vline(xintercept = yards_per_play) +
+  geom_hline(yintercept = avg_yards_per_play) +
+  geom_vline(xintercept = avg_yards_per_play) +
   geom_point(aes(color = team)) +
   geom_segment(aes(xend = off_estimate,
                    yend = def_estimate,
@@ -249,7 +319,8 @@ p_pooling <- df %>%
        title = "Adjusted Yards Per Play",
        subtitle = "The Plexiglass Principle Adaptively Applied Via Partial Pooling",
        caption = "Data: nflfastR | Plot: nflplotR | Model: lme4") +
-  theme_light()
+  theme_light() +
+  coord_fixed()
 
 ggsave("nfl_2021_yards_per_play_pooling.png",
        plot = p_pooling,
@@ -262,72 +333,19 @@ ggsave("nfl_2021_yards_per_play_pooling.png",
 
 ![](nfl_2021_yards_per_play_pooling.png)
 
-```{r scaled_plot}
 
-scaled_df <- df %>%
-  mutate(off_estimate = scale(off_estimate),
-         def_estimate = scale(def_estimate),
-         overall = (off_estimate + (-1*def_estimate))/2,
-         off_yards_per_play = scale(off_yards_per_play),
-         def_yards_per_play = scale(def_yards_per_play),
-         overall_raw = (off_yards_per_play + (-1*def_yards_per_play))/2,) %>%
-  arrange(desc(overall)) %>%
-  mutate(rank = row_number(),
-         percentile = pnorm(overall),
-         percentile_raw = pnorm(overall_raw))
-  
-scaled_plot <- scaled_df %>%
-  ggplot(aes(x = off_estimate,
-             y = def_estimate)) +
-  geom_hline(yintercept = 0) +
-  geom_vline(xintercept = 0) +
-  geom_abline(slope = -1,
-              intercept = seq(-6, 6, by = 1.5),
-              color = "dark gray") +
-  geom_nfl_logos(aes(team_abbr = team),
-                 width = 0.05) +
-  scale_y_reverse(breaks = seq(-4, 4, by = 1),
-                  minor_breaks = NULL) +
-  scale_x_continuous(breaks = seq(-4, 4, by = 1),
-                     minor_breaks = NULL) +
-  labs(title = "2021 NFL Yards Per Play Tiers",
-       subtitle = "Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage",
-       x = "(Scaled) Offensive Adjusted Yards Per Play",
-       y = "(Scaled) Defensive Adjusted Yards Per Play",
-       caption = "Data: nflfastR | Plot: nflplotR | Model: lme4") +
-  theme_light()
+```{r ranking_plot, results=FALSE}
 
-ggsave("nfl_2021_reg_season_per_play_tiers.png",
-       plot = scaled_plot,
-       units = "in",
-       height = 5.25,
-       width = 5,
-       dpi = "retina")
-
-```
-
-![](nfl_2021_reg_season_per_play_tiers.png)
-
-```{r ranking_plot}
-
-p_2021 <- scaled_df %>%
-  ggplot(aes(x = percentile,
-             y = rank)) +
+p_2021 <- est_df %>%
+  ggplot(aes(x = percentile_estimate,
+             y = estimate_rank)) +
   geom_hline(yintercept = c(0.5, 8.5, 16.5, 24.5, 32.5),
              color = "dark gray",
              linetype = "dashed") +
   geom_vline(xintercept = c(0, 0.25, 0.5, 0.75, 1),
              color = "dark gray") +
-  geom_segment(aes(x = percentile,
-                   xend = percentile_raw,
-                   y = rank,
-                   yend = rank,
-                   color = team)) +
-  geom_point(aes(x = percentile_raw,
-                 color = team)) +
   geom_nfl_logos(aes(team_abbr = team),
-                 width = 0.05,
-                 alpha = 0.8) +
+                 width = 0.05) +
   scale_x_continuous(minor_breaks = NULL,
                      labels = scales::percent) +
   scale_y_reverse(breaks = NULL,
@@ -336,7 +354,7 @@ p_2021 <- scaled_df %>%
   theme_light() +
   labs(title = "2021 NFL Regular Season Per Play Rankings",
        subtitle = "Excludes Special Teams/Kneels/Spikes; Includes Penalty Yardage",
-       x = "Combined Adjusted Yards Per Play Percentile",
+       x = "Adjusted Yards Per Play Differential: Percentile",
        y = NULL,
        caption = "Data: nflfastR | Plot: nflplotR | Model: lme4")
 
