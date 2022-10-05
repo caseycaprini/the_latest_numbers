@@ -1,7 +1,7 @@
 ---
-title: "A Basic Multilevel Model Using NFL Data"
+title: "Empirical Bayes Estimates of NFL Offense and Defense Quality"
 description: |
-  Replacing averages with random intercepts model estimates.
+  Replacing averages with random intercepts from a basic multilevel model.
 author:
   - name: Casey Caprini
 date: 2022-09-12
@@ -107,7 +107,9 @@ Traditional statisticians call this the Paradox of Regression to the Mean.  Exce
 
 ## Partial Pooling: An Intuitive Approach
 
-How much shrinkage is appropriate? We begin by building a league-wide normal distribution centered on the mean yards gained for all observations in the data set.  The standard deviation of this distribution is the standard error of this mean, assuming n = 1125 (a nominal number of plays for a team's offensive or defensive unit that is representative for the 2021 season).  We'll plot this curve as a league-wide nominal distribution, since its parameters are estimated considering all plays in the 2021 NFL regular season.
+We will use Empirical Bayes, shrinkage estimates, to regularize NFL offensive and defensive yards/play averages.^[See Section 8.7.1 of [Beyond Multiple Linear Regression](https://bookdown.org/roback/bookdown-BeyondMLR/ch-multilevelintro.html#randomslopeandint) by Roback and Legler or this NBER seminar on [Empirical Bayes methods](https://www.youtube.com/watch?v=SdWt8xAAF_4).]
+
+How much shrinkage is appropriate? We begin by building a league-wide normal distribution centered on the mean yards gained for all observations in the data set.  The standard deviation of this distribution is the standard error of the league-wide mean, assuming n = 1125 (a nominal number of plays for a team's offensive or defensive unit that is representative for the 2021 season) rather than the total number of plays in the regular season.  We'll plot this curve as a league-wide nominal distribution, since its parameters are estimated considering all plays in the 2021 NFL regular season.
 
 Next, we plot the average yards/play calculated for each offense and defense under the league-wide nominal distribution.  This allows us to compare the distribution of offensive unit averages and the distribution of the defensive unit averages against all plays.
 
@@ -202,14 +204,19 @@ ggsave("nfl_2021_unit_dist.png",
 
 A few observations:
 
-* About 9 or 10 offenses (of 32) are greater than 2 standard errors from the league wide mean (i.e., outside of gray dashed lines), whereas about 2 would be expected (0.05 * 32 = about 2). This suggests that the offense averages are too greatly dispersed.
-* The defensive average are much more closely packed about the league wide mean than the offensive averages. This suggests that significant shrinkage of remote defensive values is appropriate, since their is relatively less spread in defensive averages than offensive averages and the league-wide nominal distribution.
+* The defensive average are much more closely packed around the league wide mean than the offensive averages. This indicates that the offense identity more reliably accounts for variation in the data than defense identity. Therefore, we expect our model shrink offensive deviations from average less than defensive deviations.
+* Looking at the offenses, about 9 or 10 offenses (of 32) are greater than 2 standard errors from the league wide mean (i.e., outside of gray dashed lines).  Since the standard errors should be similar, about 2 would be expected (0.05 * 32 = about 2). This suggests that the offense averages are too greatly dispersed, so some modest shrinkage is expected.
 
-```{r rand_int_model}
+Let's look at the actual shrinkage performed by the model.
+
+```{r rand_int_model, echo=TRUE}
 mod_rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam) + (1|game_id),
                      data = pbp_df)
+```
 
+To visualize the "whirlpool" effect of the multilevel model, we build a data frame with the unadjusted unit averages and their Empirical Bayes (random intercepts) estimates.
 
+```{r build_summary_df, results=FALSE}
 off_rand_int <- coef(mod_rand_int)$posteam %>%
   rownames_to_column(var = "team") %>%
   rename(off_estimate = `(Intercept)`)
@@ -238,63 +245,14 @@ est_df <- left_join(off_avg_df,
          percentile_estimate = scale(combined_estimate)) %>%
   mutate(percentile_estimate = pnorm(percentile_estimate))
 
-lm(off_estimate ~ off_yards_per_play,
-   data = est_df) %>%
-  coefficients()
-
-est_df %>%
-  ggplot(aes(x = off_yards_per_play,
-             y = off_estimate)) +
-  geom_smooth(method = "lm",
-              se = FALSE) +
-  geom_text(aes(color = team,
-                label = team)) +
-  scale_color_nfl() +
-  scale_x_continuous(breaks = seq(0, 10, by = 0.2),
-                     minor_breaks = NULL) +
-  scale_y_continuous(breaks = seq(0, 10, by = 0.2),
-                     minor_breaks = NULL) +
-  theme_light() +
-  coord_fixed(xlim = c(4.2, 6.0),
-              ylim = c(4.4, 5.8))
-
-lm(def_estimate ~ def_yards_per_play,
-   data = est_df) %>%
-  coefficients()
-
-est_df %>%
-  ggplot(aes(x = def_yards_per_play,
-             y = def_estimate)) +
-  geom_smooth(method = "lm",
-              se = FALSE) +
-  geom_text(aes(color = team,
-                label = team)) +
-  scale_color_nfl() +
-  scale_x_continuous(breaks = seq(0, 10, by = 0.2),
-                     minor_breaks = NULL) +
-  scale_y_continuous(breaks = seq(0, 10, by = 0.2),
-                     minor_breaks = NULL) +
-  theme_light() +
-  coord_fixed(xlim = c(4.2, 6.0),
-              ylim = c(4.7, 5.5))
-
 rm(off_avg_df,
    def_avg_df)
 
 ```
 
+Then, we plot the unadjusted unit averages and their regularized estimate to show the shrinkage.
 
-```{r}
-
-est_df %>%
-  knitr::kable(digits = 2)
-
-summary(mod_rand_int)
-
-```
-
-
-```{r plot}
+```{r plot, results=FALSE}
 
 p_pooling <- est_df %>%
   ggplot(aes(x = off_yards_per_play,
@@ -333,6 +291,63 @@ ggsave("nfl_2021_yards_per_play_pooling.png",
 
 ![](nfl_2021_yards_per_play_pooling.png)
 
+To better quantify the average shrinkage applied to deviations from average for offenses, we can fit an ordinary least squares regression to a centered data frame (i.e., the league average is subtracted from both the regularized estimates and the unadjusted averages).
+
+```{r off_shrinkage_plot}
+
+centered_df <- est_df %>%
+  mutate(off_estimate = off_estimate - avg_yards_per_play,
+         off_yards_per_play = off_yards_per_play - avg_yards_per_play,
+         def_estimate = def_estimate - avg_yards_per_play,
+         def_yards_per_play = def_yards_per_play - avg_yards_per_play)
+
+lm(off_estimate ~ off_yards_per_play,
+   data = centered_df) %>%
+  coefficients()
+
+est_df %>%
+  ggplot(aes(x = off_yards_per_play - avg_yards_per_play,
+             y = off_estimate - avg_yards_per_play)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_text(aes(color = team,
+                label = team)) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(-10, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(-10, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_fixed(xlim = c(-0.9, 0.9),
+              ylim = c(-0.8, 0.8))
+```
+
+We repeat for the defensive units. As anticipated, more shrinkage is applied to the defensive units (i.e., the slope of the defensive line is closer to 0 than the offensive line).
+
+```{r }
+lm(def_estimate ~ def_yards_per_play,
+   data = centered_df) %>%
+  coefficients()
+
+est_df %>%
+  ggplot(aes(x = def_yards_per_play - avg_yards_per_play,
+             y = def_estimate - avg_yards_per_play)) +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  geom_text(aes(color = team,
+                label = team)) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(-10, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(-10, 10, by = 0.2),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_fixed(xlim = c(-0.9, 0.9),
+              ylim = c(-0.8, 0.8))
+
+```
+
+Finally, we plot adjusted yard/play differential (i.e., offense yards/play regularized estimate - defense yards/play regularized) in terms of percentiles.
 
 ```{r ranking_plot, results=FALSE}
 
@@ -368,3 +383,6 @@ ggsave("nfl_2021_reg_season_per_play.png",
 ```
 
 ![](nfl_2021_reg_season_per_play.png)
+
+## Quick Back Test: Adjusted Yard/Play Differential as a Predictor of Playoff Success
+
