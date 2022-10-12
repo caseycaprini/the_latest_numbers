@@ -4,12 +4,12 @@ description: |
   Replacing averages with random intercepts from a basic multilevel model.
 author:
   - name: Casey Caprini
-date: 2022-09-12
+date: 2022-10-12
 output:
   distill::distill_article:
     self_contained: false
     code_folding: true
-preview: nfl_2021_reg_season_per_play.png
+preview: nfl_2021_yards_per_play_pooling.png
 ---
 
 
@@ -31,9 +31,11 @@ library(patchwork)
 
 ```
 
-## Why Yards/Play Differential?
+## Empirical Bayes Estimates of Yards/Play
 
-Yards per play...
+Yards per play is a basic measure of snap-to-snap team quality. In Pittsburgh, analyst [Matt Williamson](https://twitter.com/WilliamsonNFL) frequently cites yards/play in his, noting that former Steelers GM Kevin Colbert found great value in the metric. This makes sense because there are many plays in an NFL game: a true per snap advantage is likely to build to a larger advantage over the course of a game. The yard/play idea was also likely inspired by [The Success Equation: Untangling Skill and Luck in Business, Sports, and Investing](https://www.amazon.com/Success-Equation-Untangling-Business-Investing-ebook/dp/B00A07FR4W) by [Michael J. Mauboussin](https://twitter.com/mjmauboussin) (Chapter 4), which I read earlier in 2022.
+
+Basic yards/play averages do not fully capture a true advantage. Some teams play a much weaker slate of opponents. There is sampling error or luck, good and bad, in different measures. This post hopes to improve on the simple arithmetic mean via a very basic multilevel model.
 
 While penalty assessment is a bit arbitrary in the NFL, penalty yardage is earned by poor technique and related to the tactics employed. Therefore, net penalty yardage is considered just the same as yards gained or lost conventionally, even if the down is replayed. This is a bit like preferring plate appearances to at bats in baseball (since at bats exclude walks, scorer assessed sacrifices, etc.).
 
@@ -79,18 +81,22 @@ pbp_df <- nflfastR::load_pbp(2021) %>%
 
 ## The Advantages of a Multilevel Approach
 
+> "<i>... multilevel regression deserves to be the default form of regression.</i>
+> Papers that do not use multilevel models should have to justify not using a multilevel approach."
+> - McElreath, <i>Statistical Rethinking</i>, pg. 15
+
 Multilevel models have a number of advantages over simpler regression models. Random intercepts models are the simplest multilevel models and are generally used as a baseline for which to compare more complicated multilevel models against. Here, a random intercepts model is proposed as an improvement on averaging.
 
 ### Realistic Assumptions About Independence
 
-Importantly, multilevel models make more realistic assumptions about the independence of observations in a data set.  In the NFL, context rightly shapes the meaning we derive from statistics.  For example, gaining 5 yards/play against the league's best defense reflects more positively on an offense than gaining 5 yards/play against the league's worst defense. For some games, weather conditions severely depress offense (think the Bills/Patriots game last season). Averages and simpler regression models, however, do not recognize any such context; all observations are assumed to be independent.
+Importantly, multilevel models make more realistic assumptions about the independence of observations in a data set.  Context rightly shapes the meaning we derive from statistics.  For example, gaining 5 yards/play against the NFL's best defense reflects more positively on an offense than gaining 5 yards/play against the league's worst defense. For some games, weather conditions severely depress offense (think the Bills/Patriots game in the 2021 regular season). Averages and simpler regression models, however, do not recognize any such context; all observations are assumed to be independent.
 
 Clustering is expected in yards/play data, along a number of different dimensions. Consider the following examples.
 
 * Two offenses playing in inclement weather are likely to be more similar to one another for that game than the other NFL offenses playing in more typical weather conditions that week.
 * Offenses in 2022 are likely to be more similar to the one another than they are to offenses in 1995.
 
-Multilevel models take advantage of these dependencies in the structure of the data.
+Multilevel models acknowledge and take advantage of these dependencies in the structure of the data.
 
 ### Paritial Pooling and Regularization
 
@@ -101,15 +107,21 @@ The observations in one cluster of our data are also informative for other clust
 
 Sharing of information between the results of all plays across the league, regardless of cluster, and the individual clusters in the data provides regularized estimates. The regularization (or shrinkage) performed by multilevel models tempers the conclusions drawn in each cluster of the data by considering all clusters, thus minimizing the adverse affects of overfitting (roughly, taking the noise in the sample too seriously). Regularization can thus improve out-of-sample prediction.
 
+> Complete pooling -> predict grand mean for all teams -> maximum underfitting <br>
+> No pooling -> predict group mean for each team -> maximum overfitting <br>
+> Partial pooling -> predict random intercept for each team -> a principled balance.
+
 Readers of the Football Outsiders may be familiar with the Plexiglass Principle, which roughly states that a big improvement (or decline) in performance will on average be followed by a relapse (or bounce back). The Plexiglass Principle was coined by the legendary baseball sabermetrician Bill James, who later renamed it the Whirlpool Principle: "All teams are drawn forcefully toward the center. Most of the teams which had winning records in 1982 will decline in 1983; most of the teams which had losing records in 1982 will improve in 1983." ^[Quotation and background repeated from this [excellent blog post](http://baseballanalysts.com/archives/2004/09/abstracts_from_18.php).] 
 
 Traditional statisticians call this the Paradox of Regression to the Mean.  Exceptionally good performance is likely the result of a combination of high ability and good luck; subsequent performance is likely to be better than average but not as good as the previous exceptional outcome. ^[See Section 6.5 in [Regression and Other Stories](https://avehtari.github.io/ROS-Examples/) by Gelman, Hill, and Vehtari, from which this summary of regression to the mean is adapted.]
 
 ## Partial Pooling: An Intuitive Approach
 
-We will use Empirical Bayes, shrinkage estimates, to regularize NFL offensive and defensive yards/play averages.^[See Section 8.7.1 of [Beyond Multiple Linear Regression](https://bookdown.org/roback/bookdown-BeyondMLR/ch-multilevelintro.html#randomslopeandint) by Roback and Legler or this NBER seminar on [Empirical Bayes methods](https://www.youtube.com/watch?v=SdWt8xAAF_4).]
+We will use Empirical Bayes estimates, or shrinkage estimates, to regularize NFL offensive and defensive yards/play averages.^[See Section 8.7.1 of [Beyond Multiple Linear Regression](https://bookdown.org/roback/bookdown-BeyondMLR/ch-multilevelintro.html#randomslopeandint) by Roback and Legler or this NBER seminar on [Empirical Bayes methods](https://www.youtube.com/watch?v=SdWt8xAAF_4).]
 
-How much shrinkage is appropriate? We begin by building a league-wide normal distribution centered on the mean yards gained for all observations in the data set.  The standard deviation of this distribution is the standard error of the league-wide mean, assuming n = 1125 (a nominal number of plays for a team's offensive or defensive unit that is representative for the 2021 season) rather than the total number of plays in the regular season.  We'll plot this curve as a league-wide nominal distribution, since its parameters are estimated considering all plays in the 2021 NFL regular season.
+How much shrinkage is appropriate? The multilevel model will determine the strength of the whirlpool.
+
+We begin by building a league-wide normal distribution centered on the mean yards gained for all observations in the data set. The standard deviation of this distribution is the standard error of the league-wide mean, assuming n = 1125 (a nominal number of plays for a team's offensive or defensive unit that is representative for the 2021 season) rather than the total number of plays in the regular season.  We'll plot this curve as a league-wide nominal distribution, since its parameters are estimated considering all plays in the 2021 NFL regular season.
 
 Next, we plot the average yards/play calculated for each offense and defense under the league-wide nominal distribution.  This allows us to compare the distribution of offensive unit averages and the distribution of the defensive unit averages against all plays.
 
@@ -206,10 +218,11 @@ A few observations:
 
 * The defensive average are much more closely packed around the league wide mean than the offensive averages. This indicates that the offense identity more reliably accounts for variation in the data than defense identity. Therefore, we expect our model shrink offensive deviations from average less than defensive deviations.
 * Looking at the offenses, about 9 or 10 offenses (of 32) are greater than 2 standard errors from the league wide mean (i.e., outside of gray dashed lines).  Since the standard errors should be similar, about 2 would be expected (0.05 * 32 = about 2). This suggests that the offense averages are too greatly dispersed, so some modest shrinkage is expected.
+* Since each unit will have run a similar number of plays, the standard error of the estimates of the offensive/defensive unit averages should be similar. Therefore, shrinkage should mostly be dominated by deviations from league average rather than differences in sample size (e.g., above average performance by some metric of a backup QB would be shrunk more than similar performance for a full time QB because the backup much smaller sample size).
 
-Let's look at the actual shrinkage performed by the model.
+Let's look at the actual shrinkage in the Empirical Bayes estimate.
 
-```{r rand_int_model, echo=TRUE}
+```{r rand_int_model, include=TRUE}
 mod_rand_int <- lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam) + (1|game_id),
                      data = pbp_df)
 ```
@@ -347,7 +360,9 @@ est_df %>%
 
 ```
 
-Finally, we plot adjusted yard/play differential (i.e., offense yards/play regularized estimate - defense yards/play regularized) in terms of percentiles.
+### A Point Estimate of Team Quality
+
+As our point estimate of team quality, we consider adjusted yard/play differential (i.e., offense yards/play regularized estimate - defense yards/play regularized estimate).  To more easily visualize the relative spread in team quality by this metric, we plot the results in terms of percentiles.
 
 ```{r ranking_plot, results=FALSE}
 
@@ -385,4 +400,23 @@ ggsave("nfl_2021_reg_season_per_play.png",
 ![](nfl_2021_reg_season_per_play.png)
 
 ## Quick Back Test: Adjusted Yard/Play Differential as a Predictor of Playoff Success
+
+As a quick back test, we compare how predictive regular season adjusted yard/play differential was for the 2021 NFL playoffs. The Vegas spreads below^[Retrieved from [Sports Odds History.com](https://www.sportsoddshistory.com/nfl-playoffs/).] show the winning team was favored in 8 of 13 games. In this small sample, the adjusted yard/play differential model preferred the winning team in 12 of 13 games. This is not a rigorous test by any means, but it demonstrates the model likely carries some genuine insight.
+
+|Away|Home|Result         |Vegas Spread   |Model      |
+|:--:|:--:|:-------------:|:-------------:|:---------:|
+|CIN |LV  |LV 19, CIN 26  |CIN -5.5 (Hit) |CIN (Hit)  |
+|NE  |BUF |NE 17, BUF 47  |BUF -4 (Hit)   |BUF (Hit)  |
+|PHI |TB  |PHI 15, TB 31  |TB -8.5 (Hit)  |TB (Hit)   |
+|SF  |DAL |SF 23, DAL 17  |DAL -3 (Miss)  |SF (Hit)   |
+|PIT |KC  |PIT 21, KC 42  |KC -12.5 (Hit) |KC (Hit)   |
+|ARI |LAR |ARI 11, LAR 34 |LAR -3.5 (Hit) |LAR (Hit)  |
+|CIN |TEN |CIN 19, TEN 16 |TEN -4 (Miss)  |CIN (Hit)  |
+|SF  |GB  |SF 13, GB 10   |GB -5.5 (Miss) |SF (Hit)   |
+|LAR |TB  |LAR 30, TB 27  |TB -3 (Miss)   |LAR (Hit)  |
+|BUF |KC  |BUF 36, KC 42  |KC -2 (Hit)    |BUF (Miss) |
+|CIN |KC  |CIN 27, KC 24  |KC -7 (Miss)   |CIN (Hit)  |
+|SF  |LAR |SF 17, LAR 20  |LAR -3.5 (Hit) |LAR (Hit)  |
+|LAR |CIN |LAR 23, CIN 20 |LAR -4.5 (Hit) |LAR (Hit)  |
+
 

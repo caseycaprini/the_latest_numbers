@@ -94,8 +94,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
 <!--  https://schema.org/Article -->
-<meta property="article:published" itemprop="datePublished" content="2022-09-12"/>
-<meta property="article:created" itemprop="dateCreated" content="2022-09-12"/>
+<meta property="article:published" itemprop="datePublished" content="2022-10-12"/>
+<meta property="article:created" itemprop="dateCreated" content="2022-10-12"/>
 <meta name="article:author" content="Casey Caprini"/>
 
 <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -114,7 +114,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
 <script type="text/json" id="radix-rmarkdown-metadata">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","preview"]}},"value":[{"type":"character","attributes":{},"value":["Empirical Bayes Estimates of NFL Offense and Defense Quality"]},{"type":"character","attributes":{},"value":["Replacing averages with random intercepts from a basic multilevel model."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name"]}},"value":[{"type":"character","attributes":{},"value":["Casey Caprini"]}]}]},{"type":"character","attributes":{},"value":["2022-09-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["nfl_2021_reg_season_per_play.png"]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","preview"]}},"value":[{"type":"character","attributes":{},"value":["Empirical Bayes Estimates of NFL Offense and Defense Quality"]},{"type":"character","attributes":{},"value":["Replacing averages with random intercepts from a basic multilevel model."]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name"]}},"value":[{"type":"character","attributes":{},"value":["Casey Caprini"]}]}]},{"type":"character","attributes":{},"value":["2022-10-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["nfl_2021_yards_per_play_pooling.png"]}]}
 </script>
 <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -2407,7 +2407,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Empirical Bayes Estimates of NFL Offense and Defense Quality","description":"Replacing averages with random intercepts from a basic multilevel model.","authors":[{"author":"Casey Caprini","authorURL":"#","affiliation":"&nbsp;","affiliationURL":"#","orcidID":""}],"publishedDate":"2022-09-12T00:00:00.000-04:00","citationText":"Caprini, 2022"}
+{"title":"Empirical Bayes Estimates of NFL Offense and Defense Quality","description":"Replacing averages with random intercepts from a basic multilevel model.","authors":[{"author":"Casey Caprini","authorURL":"#","affiliation":"&nbsp;","affiliationURL":"#","orcidID":""}],"publishedDate":"2022-10-12T00:00:00.000-04:00","citationText":"Caprini, 2022"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2441,15 +2441,30 @@ model.</p></p>
 <div class="d-byline">
   Casey Caprini  
   
-<br/>2022-09-12
+<br/>2022-10-12
 </div>
 
 <div class="d-article">
 <h3 id="packages-used">Packages Used</h3>
 <p>I will use the tidyverse, packages from the nflverse, and lme4 for
 the multilevel model.</p>
-<h2 id="why-yardsplay-differential">Why Yards/Play Differential?</h2>
-<p>Yards per play…</p>
+<h2 id="empirical-bayes-estimates-of-yardsplay">Empirical Bayes
+Estimates of Yards/Play</h2>
+<p>Yards per play is a basic measure of snap-to-snap team quality. In
+Pittsburgh, analyst <a href="https://twitter.com/WilliamsonNFL">Matt
+Williamson</a> frequently cites yards/play in his, noting that former
+Steelers GM Kevin Colbert found great value in the metric. This makes
+sense because there are many plays in an NFL game: a true per snap
+advantage is likely to build to a larger advantage over the course of a
+game. The yard/play idea was also likely inspired by <a
+href="https://www.amazon.com/Success-Equation-Untangling-Business-Investing-ebook/dp/B00A07FR4W">The
+Success Equation: Untangling Skill and Luck in Business, Sports, and
+Investing</a> by <a href="https://twitter.com/mjmauboussin">Michael J.
+Mauboussin</a> (Chapter 4), which I read earlier in 2022.</p>
+<p>Basic yards/play averages do not fully capture a true advantage. Some
+teams play a much weaker slate of opponents. There is sampling error or
+luck, good and bad, in different measures. This post hopes to improve on
+the simple arithmetic mean via a very basic multilevel model.</p>
 <p>While penalty assessment is a bit arbitrary in the NFL, penalty
 yardage is earned by poor technique and related to the tactics employed.
 Therefore, net penalty yardage is considered just the same as yards
@@ -2508,6 +2523,12 @@ Show code
 </div>
 <h2 id="the-advantages-of-a-multilevel-approach">The Advantages of a
 Multilevel Approach</h2>
+<blockquote>
+<p>“<i>… multilevel regression deserves to be the default form of
+regression.</i> Papers that do not use multilevel models should have to
+justify not using a multilevel approach.” - McElreath, <i>Statistical
+Rethinking</i>, pg. 15</p>
+</blockquote>
 <p>Multilevel models have a number of advantages over simpler regression
 models. Random intercepts models are the simplest multilevel models and
 are generally used as a baseline for which to compare more complicated
@@ -2516,14 +2537,14 @@ as an improvement on averaging.</p>
 <h3 id="realistic-assumptions-about-independence">Realistic Assumptions
 About Independence</h3>
 <p>Importantly, multilevel models make more realistic assumptions about
-the independence of observations in a data set. In the NFL, context
-rightly shapes the meaning we derive from statistics. For example,
-gaining 5 yards/play against the league’s best defense reflects more
-positively on an offense than gaining 5 yards/play against the league’s
-worst defense. For some games, weather conditions severely depress
-offense (think the Bills/Patriots game last season). Averages and
-simpler regression models, however, do not recognize any such context;
-all observations are assumed to be independent.</p>
+the independence of observations in a data set. Context rightly shapes
+the meaning we derive from statistics. For example, gaining 5 yards/play
+against the NFL’s best defense reflects more positively on an offense
+than gaining 5 yards/play against the league’s worst defense. For some
+games, weather conditions severely depress offense (think the
+Bills/Patriots game in the 2021 regular season). Averages and simpler
+regression models, however, do not recognize any such context; all
+observations are assumed to be independent.</p>
 <p>Clustering is expected in yards/play data, along a number of
 different dimensions. Consider the following examples.</p>
 <ul>
@@ -2533,8 +2554,8 @@ in more typical weather conditions that week.</li>
 <li>Offenses in 2022 are likely to be more similar to the one another
 than they are to offenses in 1995.</li>
 </ul>
-<p>Multilevel models take advantage of these dependencies in the
-structure of the data.</p>
+<p>Multilevel models acknowledge and take advantage of these
+dependencies in the structure of the data.</p>
 <h3 id="paritial-pooling-and-regularization">Paritial Pooling and
 Regularization</h3>
 <p>The observations in one cluster of our data are also informative for
@@ -2556,6 +2577,12 @@ cluster of the data by considering all clusters, thus minimizing the
 adverse affects of overfitting (roughly, taking the noise in the sample
 too seriously). Regularization can thus improve out-of-sample
 prediction.</p>
+<blockquote>
+<p>Complete pooling -&gt; predict grand mean for all teams -&gt; maximum
+underfitting <br> No pooling -&gt; predict group mean for each team
+-&gt; maximum overfitting <br> Partial pooling -&gt; predict random
+intercept for each team -&gt; a principled balance.</p>
+</blockquote>
 <p>Readers of the Football Outsiders may be familiar with the Plexiglass
 Principle, which roughly states that a big improvement (or decline) in
 performance will on average be followed by a relapse (or bounce back).
@@ -2574,18 +2601,20 @@ exceptional outcome. <a href="#fn2" class="footnote-ref" id="fnref2"
 role="doc-noteref"><sup>2</sup></a></p>
 <h2 id="partial-pooling-an-intuitive-approach">Partial Pooling: An
 Intuitive Approach</h2>
-<p>We will use Empirical Bayes, shrinkage estimates, to regularize NFL
-offensive and defensive yards/play averages.<a href="#fn3"
-class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<p>How much shrinkage is appropriate? We begin by building a league-wide
-normal distribution centered on the mean yards gained for all
-observations in the data set. The standard deviation of this
-distribution is the standard error of the league-wide mean, assuming n =
-1125 (a nominal number of plays for a team’s offensive or defensive unit
-that is representative for the 2021 season) rather than the total number
-of plays in the regular season. We’ll plot this curve as a league-wide
-nominal distribution, since its parameters are estimated considering all
-plays in the 2021 NFL regular season.</p>
+<p>We will use Empirical Bayes estimates, or shrinkage estimates, to
+regularize NFL offensive and defensive yards/play averages.<a
+href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a></p>
+<p>How much shrinkage is appropriate? The multilevel model will
+determine the strength of the whirlpool.</p>
+<p>We begin by building a league-wide normal distribution centered on
+the mean yards gained for all observations in the data set. The standard
+deviation of this distribution is the standard error of the league-wide
+mean, assuming n = 1125 (a nominal number of plays for a team’s
+offensive or defensive unit that is representative for the 2021 season)
+rather than the total number of plays in the regular season. We’ll plot
+this curve as a league-wide nominal distribution, since its parameters
+are estimated considering all plays in the 2021 NFL regular season.</p>
 <p>Next, we plot the average yards/play calculated for each offense and
 defense under the league-wide nominal distribution. This allows us to
 compare the distribution of offensive unit averages and the distribution
@@ -2697,8 +2726,16 @@ dashed lines). Since the standard errors should be similar, about 2
 would be expected (0.05 * 32 = about 2). This suggests that the offense
 averages are too greatly dispersed, so some modest shrinkage is
 expected.</li>
+<li>Since each unit will have run a similar number of plays, the
+standard error of the estimates of the offensive/defensive unit averages
+should be similar. Therefore, shrinkage should mostly be dominated by
+deviations from league average rather than differences in sample size
+(e.g., above average performance by some metric of a backup QB would be
+shrunk more than similar performance for a full time QB because the
+backup much smaller sample size).</li>
 </ul>
-<p>Let’s look at the actual shrinkage performed by the model.</p>
+<p>Let’s look at the actual shrinkage in the Empirical Bayes
+estimate.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -2883,9 +2920,13 @@ Show code
 </details>
 <p><img src="nfl-basic-multilevel-models_files/figure-html5/unnamed-chunk-1-1.png" width="624" /></p>
 </div>
-<p>Finally, we plot adjusted yard/play differential (i.e., offense
-yards/play regularized estimate - defense yards/play regularized) in
-terms of percentiles.</p>
+<h3 id="a-point-estimate-of-team-quality">A Point Estimate of Team
+Quality</h3>
+<p>As our point estimate of team quality, we consider adjusted yard/play
+differential (i.e., offense yards/play regularized estimate - defense
+yards/play regularized estimate). To more easily visualize the relative
+spread in team quality by this metric, we plot the results in terms of
+percentiles.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
@@ -2928,6 +2969,118 @@ Show code
 id="quick-back-test-adjusted-yardplay-differential-as-a-predictor-of-playoff-success">Quick
 Back Test: Adjusted Yard/Play Differential as a Predictor of Playoff
 Success</h2>
+<p>As a quick back test, we compare how predictive regular season
+adjusted yard/play differential was for the 2021 NFL playoffs. The Vegas
+spreads below<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a> show the winning team was favored in
+8 of 13 games. In this small sample, the adjusted yard/play differential
+model preferred the winning team in 12 of 13 games. This is not a
+rigorous test by any means, but it demonstrates the model likely carries
+some genuine insight.</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Away</th>
+<th style="text-align: center;">Home</th>
+<th style="text-align: center;">Result</th>
+<th style="text-align: center;">Vegas Spread</th>
+<th style="text-align: center;">Model</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">CIN</td>
+<td style="text-align: center;">LV</td>
+<td style="text-align: center;">LV 19, CIN 26</td>
+<td style="text-align: center;">CIN -5.5 (Hit)</td>
+<td style="text-align: center;">CIN (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">NE</td>
+<td style="text-align: center;">BUF</td>
+<td style="text-align: center;">NE 17, BUF 47</td>
+<td style="text-align: center;">BUF -4 (Hit)</td>
+<td style="text-align: center;">BUF (Hit)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">PHI</td>
+<td style="text-align: center;">TB</td>
+<td style="text-align: center;">PHI 15, TB 31</td>
+<td style="text-align: center;">TB -8.5 (Hit)</td>
+<td style="text-align: center;">TB (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">SF</td>
+<td style="text-align: center;">DAL</td>
+<td style="text-align: center;">SF 23, DAL 17</td>
+<td style="text-align: center;">DAL -3 (Miss)</td>
+<td style="text-align: center;">SF (Hit)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">PIT</td>
+<td style="text-align: center;">KC</td>
+<td style="text-align: center;">PIT 21, KC 42</td>
+<td style="text-align: center;">KC -12.5 (Hit)</td>
+<td style="text-align: center;">KC (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">ARI</td>
+<td style="text-align: center;">LAR</td>
+<td style="text-align: center;">ARI 11, LAR 34</td>
+<td style="text-align: center;">LAR -3.5 (Hit)</td>
+<td style="text-align: center;">LAR (Hit)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">CIN</td>
+<td style="text-align: center;">TEN</td>
+<td style="text-align: center;">CIN 19, TEN 16</td>
+<td style="text-align: center;">TEN -4 (Miss)</td>
+<td style="text-align: center;">CIN (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">SF</td>
+<td style="text-align: center;">GB</td>
+<td style="text-align: center;">SF 13, GB 10</td>
+<td style="text-align: center;">GB -5.5 (Miss)</td>
+<td style="text-align: center;">SF (Hit)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">LAR</td>
+<td style="text-align: center;">TB</td>
+<td style="text-align: center;">LAR 30, TB 27</td>
+<td style="text-align: center;">TB -3 (Miss)</td>
+<td style="text-align: center;">LAR (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">BUF</td>
+<td style="text-align: center;">KC</td>
+<td style="text-align: center;">BUF 36, KC 42</td>
+<td style="text-align: center;">KC -2 (Hit)</td>
+<td style="text-align: center;">BUF (Miss)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">CIN</td>
+<td style="text-align: center;">KC</td>
+<td style="text-align: center;">CIN 27, KC 24</td>
+<td style="text-align: center;">KC -7 (Miss)</td>
+<td style="text-align: center;">CIN (Hit)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">SF</td>
+<td style="text-align: center;">LAR</td>
+<td style="text-align: center;">SF 17, LAR 20</td>
+<td style="text-align: center;">LAR -3.5 (Hit)</td>
+<td style="text-align: center;">LAR (Hit)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">LAR</td>
+<td style="text-align: center;">CIN</td>
+<td style="text-align: center;">LAR 23, CIN 20</td>
+<td style="text-align: center;">LAR -4.5 (Hit)</td>
+<td style="text-align: center;">LAR (Hit)</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <section class="footnotes footnotes-end-of-document"
@@ -2949,6 +3102,10 @@ href="https://bookdown.org/roback/bookdown-BeyondMLR/ch-multilevelintro.html#ran
 Multiple Linear Regression</a> by Roback and Legler or this NBER seminar
 on <a href="https://www.youtube.com/watch?v=SdWt8xAAF_4">Empirical Bayes
 methods</a>.<a href="#fnref3" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Retrieved from <a
+href="https://www.sportsoddshistory.com/nfl-playoffs/">Sports Odds
+History.com</a>.<a href="#fnref4" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
