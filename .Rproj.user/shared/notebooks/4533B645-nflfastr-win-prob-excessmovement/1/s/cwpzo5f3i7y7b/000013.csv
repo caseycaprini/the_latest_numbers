@@ -1,0 +1,8 @@
+"0","x <- seq(0, 1, by = 0.001)"
+"0","plot_df <- data.frame(x)"
+"0","ggplot(plot_df,"
+"0","       aes(x = x)) +"
+"0","  stat_function(fun=function(x) (x * (1-x))) +"
+"0","  labs(x = ""Win Probability (WP)"","
+"0","       y = ""Uncertainty (= WP * (1 - WP))"") +"
+"0","  theme_light()"

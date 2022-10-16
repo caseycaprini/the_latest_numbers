@@ -1,0 +1,8 @@
+"0",""
+"0","mlb_excess %>%"
+"0","  filter(is.na(movement) == F) %>%"
+"0","  ggplot(aes(x = movement - reduction)) +"
+"0","  geom_density(fill = ""gray"") +"
+"0","  theme_light() +"
+"0","  labs(x = ""Excess Movement"","
+"0","       y = ""Density"")"

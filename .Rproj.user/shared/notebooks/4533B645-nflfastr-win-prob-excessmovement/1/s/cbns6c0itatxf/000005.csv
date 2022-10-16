@@ -1,0 +1,5 @@
+"0",""
+"0","mlb_excess %>%"
+"0","  summarize(average_excess_movement = mean(movement - reduction, na.rm = TRUE),"
+"0","            normalized_excess_movement = mean(movement, na.rm = TRUE) / mean(reduction, na.rm = TRUE)) %>%"
+"0","  print()"

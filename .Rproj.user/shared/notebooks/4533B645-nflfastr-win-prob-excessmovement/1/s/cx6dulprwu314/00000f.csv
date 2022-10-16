@@ -1,0 +1,6 @@
+"0","nfl_season_df %>%"
+"0","  filter(is.na(movement) == F) %>%"
+"0","  filter(is.na(unc_reduction) == F) %>%"
+"0","  summarize(avg_excess_move = mean(movement - unc_reduction),"
+"0","            norm_excess_move = mean(movement) / mean(unc_reduction)) %>%"
+"0","  print()"
