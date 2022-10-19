@@ -10,6 +10,6 @@ navbar:
       href: index.html
     - text: "About"
       href: about.html
-    - text: "2021 NFL Time Average Ranks"
-      href: 2021-nfl-time-average-ranks.html
+    - text: "2022 NFL Team Metrics"
+      href: 2022-nfl-team-metrics.html
 output: distill::distill_article
