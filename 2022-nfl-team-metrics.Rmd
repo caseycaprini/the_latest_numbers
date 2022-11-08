@@ -4,7 +4,7 @@ description: |
   Team time average metrics for the 2021 regular season.
 author:
   - name: Casey Caprini
-date: 11-01-2022
+date: 11-07-2022
 output:
   distill::distill_article:
     self_contained: false
