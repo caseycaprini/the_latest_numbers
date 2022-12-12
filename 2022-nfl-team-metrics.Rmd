@@ -4,7 +4,7 @@ description: |
   Team time average metrics for the 2021 regular season.
 author:
   - name: Casey Caprini
-date: 12-06-2022
+date: 12-12-2022
 output:
   distill::distill_article:
     self_contained: false
@@ -30,7 +30,8 @@ time_avg_df <- nfltools::nfl_mvt_season(year = 2022) %>%
   group_by(team) %>%
   summarize(time_avg_lead = mean(time_avg_lead, na.rm = T),
             time_avg_wins = sum(expected_win_percentage, na.rm = T),
-            time_avg_win_percent = time_avg_wins/n())
+            time_avg_win_percent = time_avg_wins/n()) %>%
+  mutate(time_avg_std = scale(time_avg_lead))
 
 penalty_yards_gained <- function(df){
   df %>%
@@ -103,8 +104,8 @@ df <- teams_colors_logos %>%
             by = "team") %>%
   mutate(yards_per_snap_diff = off_yards_per_snap - def_yards_per_snap,
          adj_yards_per_snap_diff = off_adj_yards_per_snap - def_adj_yards_per_snap) %>%
-  mutate(adj_per_snap_percentile = scale(adj_yards_per_snap_diff)) %>%
-  mutate(adj_per_snap_percentile = pnorm(adj_per_snap_percentile))
+  mutate(adj_per_snap_std = scale(adj_yards_per_snap_diff)) %>%
+  mutate(adj_per_snap_percentile = pnorm(adj_per_snap_std))
 
 ```
 
@@ -122,10 +123,10 @@ p_time_avg <- df %>%
              color = "black") +
   geom_nfl_logos(aes(team_abbr = team),
                  width = 0.05) +
-  coord_cartesian(ylim = c(0, 1)) +
+  coord_cartesian(ylim = c(0.2, 0.8)) +
   scale_x_continuous(breaks = seq(from = -24, to = 24, by = 3),
                      minor_breaks = NULL) +
-  scale_y_continuous(breaks = seq(from = 0, to = 1, by = 0.2),
+  scale_y_continuous(breaks = seq(from = 0.2, to = 0.8, by = 0.2),
                      minor_breaks = NULL,
                      labels = scales::percent) +
   theme_light() +
@@ -145,34 +146,33 @@ ggsave(filename = "time_avg_plot.png",
 
 ![](time_avg_plot.png)
 
-```{r time_avg_percentile_plot, echo=FALSE}
+```{r time_avg_standardized_plot, echo=FALSE}
 
-p_time_avg_percentile <- df %>%
+p_time_avg_standardized <- df %>%
   arrange(time_avg_lead) %>%
   mutate(rank = row_number(),
          time_avg_lead = scale(time_avg_lead)) %>%
-  mutate(time_avg_lead = pnorm(time_avg_lead)) %>%
   ggplot(aes(x = time_avg_lead,
              y = rank)) +
   geom_hline(yintercept = c(0.5, 8.5, 16.5, 24.5, 32.5),
              color = "dark gray",
              linetype = "dashed") +
-  geom_vline(xintercept = c(0, 0.25, 0.5, 0.75, 1),
+  geom_vline(xintercept = c(-2, -1, 0, 1, 2),
              color = "dark gray") +
   geom_nfl_logos(aes(team_abbr = team),
                  width = 0.05) +
   scale_x_continuous(minor_breaks = NULL,
-                     labels = scales::percent) +
+                     breaks = seq(-4, 4, by = 0.5)) +
   scale_y_continuous(breaks = NULL,
                      minor_breaks = NULL) +
   theme_light() +
-  labs(title = "2022 NFL Time Average Lead Percentile Rankings",
-       x = "Time Average Lead: NFL Percentile",
+  labs(title = "2022 NFL Time Average Lead Rankings",
+       x = "Time Average Lead: Standardized",
        y = NULL,
        caption = "Data: nflfastR | Plot: nflplotR")
 
-ggsave("nfl_time_avg_lead_percentile.png",
-       plot = p_time_avg_percentile,
+ggsave("nfl_time_avg_lead_standardized.png",
+       plot = p_time_avg_standardized,
        units = "in",
        height = 5.25,
        width = 5,
@@ -180,7 +180,7 @@ ggsave("nfl_time_avg_lead_percentile.png",
 
 ```
 
-![](nfl_time_avg_lead_percentile.png)
+![](nfl_time_avg_lead_standardized.png)
 
 ### Adjusted Yards Per Play
 
@@ -213,33 +213,33 @@ ggsave("nfl_adj_per_snap_units.png",
 
 ![](nfl_adj_per_snap_units.png)
 
-```{r per_snap_percentile_plot, echo=FALSE}
+```{r per_snap_standardized_plot, echo=FALSE}
 
-p_per_snap_percentile <- df %>%
-  arrange(adj_per_snap_percentile) %>%
+p_per_snap_standardized <- df %>%
+  arrange(adj_per_snap_std) %>%
   mutate(rank = row_number()) %>%
-  ggplot(aes(x = adj_per_snap_percentile,
+  ggplot(aes(x = adj_per_snap_std,
              y = rank)) +
   geom_hline(yintercept = c(0.5, 8.5, 16.5, 24.5, 32.5),
              color = "dark gray",
              linetype = "dashed") +
-  geom_vline(xintercept = c(0, 0.25, 0.5, 0.75, 1),
+  geom_vline(xintercept = seq(-2, 2, by = 1),
              color = "dark gray") +
   geom_nfl_logos(aes(team_abbr = team),
                  width = 0.05) +
   scale_x_continuous(minor_breaks = NULL,
-                     labels = scales::percent) +
+                     breaks = seq(-4, 4, by = 0.5)) +
   scale_y_continuous(breaks = NULL,
                      minor_breaks = NULL) +
   theme_light() +
   labs(title = "2022 NFL Adjusted Yards/Snap Differential Rankings",
        subtitle = "Excludes Kneels/Spikes. Includes Penalty Yardage.\nyards_gained ~ 1 + (1|posteam) + (1|defteam)",
-       x = "Adjusted Yards/Snap Differential: Percentile",
+       x = "Adjusted Yards/Snap Differential: Standardized",
        y = NULL,
        caption = "Data: nflfastR | Plot: nflplotR | Model: lme4")
 
-ggsave("nfl_adj_per_snap_percentile.png",
-       plot = p_per_snap_percentile,
+ggsave("nfl_adj_per_snap_standardized.png",
+       plot = p_per_snap_standardized,
        units = "in",
        height = 5.25,
        width = 5,
@@ -247,7 +247,41 @@ ggsave("nfl_adj_per_snap_percentile.png",
 
 ```
 
-![](nfl_adj_per_snap_percentile.png)
+![](nfl_adj_per_snap_standardized.png)
+
+```{r composite_standardized_plot, echo=FALSE}
+p_composite_rank <- df %>%
+  mutate(composite = ((2*adj_per_snap_std) + time_avg_std)/3) %>%
+  arrange(composite) %>%
+  mutate(composite_rank = row_number()) %>%
+  ggplot(aes(x = composite,
+             y = composite_rank)) +
+    geom_hline(yintercept = c(0.5, 8.5, 16.5, 24.5, 32.5),
+               color = "dark gray",
+               linetype = "dashed") +
+  geom_vline(xintercept = seq(-2, 2, by = 1),
+             color = "dark gray") +
+  geom_nfl_logos(aes(team_abbr = team),
+                 width = 0.05) +
+    scale_x_continuous(minor_breaks = NULL,
+                     breaks = seq(-4, 4, by = 0.5)) +
+  scale_y_continuous(breaks = NULL,
+                     minor_breaks = NULL) +
+  theme_light() +
+  labs(x = "Composite Rank (Standardized)",
+       y = NULL,
+       title = "Composite Team Rankings",
+       subtitle = "2 Parts Adjusted Yards/Snap Differential,\n1 Part Time Average Lead")
+
+ggsave("nfl_composite_rank.png",
+       plot = p_composite_rank,
+       units = "in",
+       height = 5.25,
+       width = 5,
+       dpi = "retina")
+```
+
+![](nfl_composite_rank.png)
 
 ## Table
 
@@ -255,6 +289,8 @@ ggsave("nfl_adj_per_snap_percentile.png",
 
 df %>%
   select(-adj_per_snap_percentile) %>%
+  mutate(time_avg_std = as.numeric(time_avg_std),
+         adj_per_snap_std = as.numeric(adj_per_snap_std)) %>%
   reactable(
     theme = pff(),
     height = 675,
@@ -278,6 +314,8 @@ df %>%
                                  zIndex = 1)),
       time_avg_lead = colDef(name = "Time Average Lead",
                              format = colFormat(digits = 1)),
+      time_avg_std = colDef(name = "(Std) Time Average Lead",
+                            format = colFormat(digits = 2)),
       time_avg_wins = colDef(name = "Expected Wins",
                              format = colFormat(digits = 1)),
       time_avg_win_percent = colDef(name = "Expected Win Percentage",
@@ -293,13 +331,16 @@ df %>%
       yards_per_snap_diff = colDef(name = "Yards/Snap Diff",
                                    format = colFormat(digits = 2)),
       adj_yards_per_snap_diff = colDef(name = "Adj Yards/Snap Diff",
-                                       format = colFormat(digits = 2))
+                                       format = colFormat(digits = 2)),
+      adj_per_snap_std = colDef(name = "(Std) Adj Yards/Snap Diff",
+                                format = colFormat(digits = 1))
     ),
     columnGroups = list(
       colGroup(name = "Time Average Stats",
                columns = c("time_avg_lead",
                            "time_avg_wins",
-                           "time_avg_win_percent")),
+                           "time_avg_win_percent",
+                           "time_avg_std")),
       colGroup(name = "Offense",
                columns = c("off_yards_per_snap",
                            "off_adj_yards_per_snap")),
@@ -308,7 +349,8 @@ df %>%
                            "def_adj_yards_per_snap")),
       colGroup(name = "Differential",
                columns = c("yards_per_snap_diff",
-                           "adj_yards_per_snap_diff"))
+                           "adj_yards_per_snap_diff",
+                           "adj_per_snap_std"))
       ),
     pagination = F,
     highlight = T,
