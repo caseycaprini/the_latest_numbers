@@ -4,7 +4,7 @@ description: |
   Team time average metrics for the 2021 regular season.
 author:
   - name: Casey Caprini
-date: 12-12-2022
+date: 12-13-2022
 output:
   distill::distill_article:
     self_contained: false
@@ -249,6 +249,8 @@ ggsave("nfl_adj_per_snap_standardized.png",
 
 ![](nfl_adj_per_snap_standardized.png)
 
+### NFL Power Ranking
+
 ```{r composite_standardized_plot, echo=FALSE}
 p_composite_rank <- df %>%
   mutate(composite = ((2*adj_per_snap_std) + time_avg_std)/3) %>%
@@ -268,9 +270,9 @@ p_composite_rank <- df %>%
   scale_y_continuous(breaks = NULL,
                      minor_breaks = NULL) +
   theme_light() +
-  labs(x = "Composite Rank (Standardized)",
+  labs(x = "Team Quality (Standardized)",
        y = NULL,
-       title = "Composite Team Rankings",
+       title = "NFL Power Ranking",
        subtitle = "2 Parts Adjusted Yards/Snap Differential,\n1 Part Time Average Lead")
 
 ggsave("nfl_composite_rank.png",
