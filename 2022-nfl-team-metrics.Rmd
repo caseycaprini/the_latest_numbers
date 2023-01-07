@@ -88,6 +88,8 @@ def_rand_int <- coef(mod_rand_int)$defteam %>%
   rownames_to_column(var = "team") %>%
   rename(def_adj_yards_per_snap = `(Intercept)`)
 
+
+
 per_snap_df <- off_avg %>%
   left_join(off_rand_int,
             by = "team") %>%
@@ -95,6 +97,44 @@ per_snap_df <- off_avg %>%
             by = "team") %>%
   left_join(def_rand_int,
             by = "team")
+
+
+mean_def_adj_per_snap <- mean(per_snap_df$def_adj_yards_per_snap)
+mean_off_adj_per_snap <- mean(per_snap_df$off_adj_yards_per_snap)
+
+off_post_strat <- pbp_df %>%
+  group_by(week, posteam, defteam) %>%
+  summarize(n = n()) %>%
+  rename(team = posteam) %>%
+  left_join(per_snap_df %>%
+              select(team, def_adj_yards_per_snap),
+            by = c("defteam" = "team")) %>%
+  ungroup() %>%
+  group_by(team) %>%
+  summarize(off_opp_adj = mean_def_adj_per_snap / weighted.mean(def_adj_yards_per_snap, n))
+
+def_post_strat <- pbp_df %>%
+  group_by(week, defteam, posteam) %>%
+  summarize(n = n()) %>%
+  rename(team = defteam) %>%
+  left_join(per_snap_df %>%
+              select(team, off_adj_yards_per_snap),
+            by = c("posteam" = "team")) %>%
+  ungroup() %>%
+  group_by(team) %>%
+  summarize(def_opp_adj = mean_off_adj_per_snap / weighted.mean(off_adj_yards_per_snap, n))
+
+
+
+per_snap_df <- per_snap_df %>%
+  left_join(def_post_strat,
+            by = "team") %>%
+  left_join(off_post_strat,
+            by = "team") %>%
+  mutate(off_adj_yards_per_snap = off_adj_yards_per_snap * off_opp_adj,
+         def_adj_yards_per_snap = def_adj_yards_per_snap * def_opp_adj,
+         off_opp_adj = NULL,
+         def_opp_adj = NULL)
 
 df <- teams_colors_logos %>%
   select(team_logo_espn,
@@ -108,8 +148,8 @@ df <- teams_colors_logos %>%
             by = "team") %>%
   mutate(yards_per_snap_diff = off_yards_per_snap - def_yards_per_snap,
          adj_yards_per_snap_diff = off_adj_yards_per_snap - def_adj_yards_per_snap) %>%
-  mutate(adj_per_snap_std = scale(adj_yards_per_snap_diff)) %>%
-  mutate(adj_per_snap_percentile = pnorm(adj_per_snap_std))
+  mutate(adj_per_snap_std = scale(adj_yards_per_snap_diff))
+
 
 ```
 
@@ -123,7 +163,7 @@ p_time_avg <- df %>%
   ggplot(aes(x = time_avg_lead, y = time_avg_win_percent)) +
   geom_vline(xintercept = 0,
              color = "black") +
-  geom_hline(yintercept = 0,
+  geom_hline(yintercept = 0.5,
              color = "black") +
   geom_nfl_logos(aes(team_abbr = team),
                  width = 0.05) +
@@ -294,7 +334,6 @@ ggsave("nfl_composite_rank.png",
 ```{r table, echo=FALSE}
 
 df %>%
-  select(-adj_per_snap_percentile) %>%
   mutate(time_avg_std = as.numeric(time_avg_std),
          adj_per_snap_std = as.numeric(adj_per_snap_std)) %>%
   reactable(
