@@ -4,7 +4,7 @@ description: |
   Team time average metrics for the 2021 regular season.
 author:
   - name: Casey Caprini
-date: 01-04-2023
+date: 01-09-2023
 output:
   distill::distill_article:
     self_contained: false
@@ -150,6 +150,44 @@ df <- teams_colors_logos %>%
          adj_yards_per_snap_diff = off_adj_yards_per_snap - def_adj_yards_per_snap) %>%
   mutate(adj_per_snap_std = scale(adj_yards_per_snap_diff))
 
+off_rolling <- pbp_df %>%
+  group_by(week, posteam,) %>%
+  summarize(off_yards_per_play = mean(yards_gained)) %>%
+  ungroup() %>%
+  arrange(posteam, week) %>%
+  group_by(posteam) %>%
+  summarize(week = week,
+            off_rolling = slider::slide_dbl(
+              .x = off_yards_per_play,
+              .f = mean, 
+              .before = 6L,
+              .complete = T)) %>%
+  rename(team = posteam)
+
+def_rolling <- pbp_df %>%
+  group_by(week, defteam,) %>%
+  summarize(def_yards_per_play = mean(yards_gained)) %>%
+  ungroup() %>%
+  arrange(defteam, week) %>%
+  group_by(defteam) %>%
+  summarize(week = week,
+            def_rolling = slider::slide_dbl(
+              .x = def_yards_per_play,
+              .f = mean, 
+              .before = 6L,
+              .complete = T)) %>%
+  rename(team = defteam)
+
+df_rolling <- off_rolling %>%
+  left_join(def_rolling,
+            by = c("team", "week")) %>%
+  ungroup() %>%
+  mutate(rolling_diff = off_rolling - def_rolling) %>%
+  ungroup() %>%
+  group_by(week) %>%
+  mutate(off_rolling = scale(off_rolling),
+         def_rolling = -1 * scale(def_rolling),
+         rolling_diff = scale(rolling_diff))
 
 ```
 
@@ -225,6 +263,83 @@ ggsave("nfl_time_avg_lead_standardized.png",
 ```
 
 ![](nfl_time_avg_lead_standardized.png)
+
+### Unadjusted Yards Per Play Rolling Averages
+```{r}
+
+p_diff_roll <- df_rolling %>%
+  ggplot(aes(y = rolling_diff,
+             x = week)) +
+  geom_path(aes(group = team,
+                color = team)) +
+  geom_point(aes(color = team)) +
+  geom_nfl_logos(data = df_rolling %>% filter(week == 18),
+                 width = 0.03,
+                 aes(team_abbr = team),
+                 alpha = 0.6) +
+#  ggrepel::geom_label_repel(
+#    data = df_rolling %>%
+#              filter(week == 18),
+#    aes(label = team,
+#        color = team),
+#    min.segment.length = 0) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(0, 18, by = 3),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_cartesian(xlim = c(6, 20)) +
+  labs(y = "Yard/Snap Differential (Yards)",
+       x = NULL,
+       title = "Six (6) Game Rolling Average Panels")
+
+p_off_roll <- df_rolling %>%
+  ggplot(aes(y = off_rolling,
+             x = week)) +
+  geom_path(aes(group = team,
+                color = team)) +
+  geom_point(aes(color = team)) +
+  ggrepel::geom_label_repel(
+    data = df_rolling %>%
+              filter(week == 18),
+    aes(label = team,
+        color = team),
+    min.segment.length = 0) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(0, 18, by = 3),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_cartesian(xlim = c(6, 18)) +
+  labs(y = "Offensive Yards/Snap (Yards)",
+       x = NULL)
+
+p_def_roll <- df_rolling %>%
+  ggplot(aes(y = def_rolling,
+             x = week)) +
+  geom_path(aes(group = team,
+                color = team)) +
+  geom_point(aes(color = team)) +
+  ggrepel::geom_label_repel(
+    data = df_rolling %>%
+              filter(week == 18),
+    aes(label = team,
+        color = team),
+    min.segment.length = 0) +
+  scale_color_nfl() +
+  scale_x_continuous(breaks = seq(0, 18, by = 3),
+                     minor_breaks = NULL) +
+  theme_light() +
+  coord_cartesian(xlim = c(6, 18)) +
+  labs(y = "Defensive Yards/Snap (Yards)",
+       x = "Week")
+
+p_diff_roll
+
+p_off_roll
+
+p_def_roll 
+
+```
+
 
 ### Adjusted Yards Per Play
 

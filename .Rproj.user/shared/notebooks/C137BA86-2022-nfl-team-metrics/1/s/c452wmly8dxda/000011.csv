@@ -1,0 +1,17 @@
+"0","df_rolling <- off_rolling %>%
+"
+"2","Warning messages:
+"
+"2","1: ggrepel: 24 unlabeled data points (too many overlaps). Consider increasing max.overlaps 
+"
+"2","2: ggrepel: 24 unlabeled data points (too many overlaps). Consider increasing max.overlaps 
+"
+"0","  left_join(def_rolling,"
+"0","            by = c(""team"", ""week"")) %>%"
+"0","  ungroup() %>%"
+"0","  mutate(rolling_diff = off_rolling - def_rolling) %>%"
+"0","  ungroup() %>%"
+"0","  group_by(week) %>%"
+"0","  mutate(off_rolling = scale(off_rolling),"
+"0","         def_rolling = scale(def_rolling),"
+"0","         rolling_diff = scale(rolling_diff))"

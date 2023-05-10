@@ -1,0 +1,1 @@
+{"frames":[{"func":"df_rolling %>% p_diff_roll","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in p_diff_roll(.) : could not find function \"p_diff_roll\"\n"}
