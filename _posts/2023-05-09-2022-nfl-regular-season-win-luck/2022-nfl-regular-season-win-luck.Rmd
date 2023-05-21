@@ -1,5 +1,5 @@
 ---
-title: "2022-nfl-regular-season-win-luck"
+title: "2022 NFL Regular Season Win Luck"
 description: |
   Estimates of NFL Regular Season Record Luck 
 author:
@@ -10,38 +10,33 @@ output:
   distill::distill_article:
     self_contained: false
     code_folding: true
+preview: nfl_2022_win_luck.png
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
 
 #### Packages Used
 
-```{r setup, message=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-
-
+```{r libraries, message=FALSE}
 library(tidyverse)
 library(nflfastR)
 library(nflplotR)
 library(nfltools)
 ```
 
-## Measures of Win 'Luck'
+## Two Measures of Win 'Luck'
 
-### Pythagorean Win Luck
+This post takes a look at two estimates of win luck, or roughly, actual record compared with "expected" record.
 
-### Time Average Win Luck
+First, Pythagorean Win Expectation. I'll use the [Daryl Morey formulation](https://grantland.com/features/breaking-best-nfl-stats/), which built on Bill James's work for baseball. The basic logic of Pythagorean Win Expectation is as follows: total points scored and allowed for an entire regular season are more reliable indicator of "true" ability than the sum of individual game outcomes (i.e., win/loss/tie). Thus, I think of Pythagorean Win Expectation as an <i>across game estimate</i> of expected regular season record.
 
+Second, I'll use my time average lead concept. This approach estimates the expected win percentage for each individual game, and estimates expected wins for a season using the sum of these individual game expected win percentage estimates. Since the estimation is done at the individual game level, I'll call this a <i>within game estimate</i>.
 
+### Time Average Win Expectancy Model
 
-
-This post takes a look at two estimates of win luck, or roughly actual record compared with expected record.
-
-One, Pythagorean Win Expectation. I'll use the [Daryl Morey formulation](https://grantland.com/features/breaking-best-nfl-stats/), which built form Bill James's work for baseball. The basic logic of Pythagorean Win Expectation is that points scored and allowed for an entire season are more reliable gauges of team's true ability than within a single game. Thus, Pythagorean Win Expectation is an <i>across game estimate</i> of expected regular season record.
-
-Two, I'll use my time average lead concept. This approach estimates the expected win percentage for each individual game, and estimates the season win percentage by taking the average of the individual game estimates. uses the average lead or deficit in a game to estimate the average win percentage for each game and computes. Since the real estimation is done at the individual game level, I call this a <i>within game estimate</i>.
-
-### Time Average Model Win Expectancy Model
-
-The code below fits a logistic model to the 2015 to 2021 regular seasons. It also assembles the information for and calculates the Pythagorean Win Expectation.
+The code below fits a logistic model to the 2015 to 2021 regular seasons.
 
 ```{r, message=FALSE}
 
@@ -83,7 +78,8 @@ train_df <- left_join(
 model <- rstanarm::stan_glm(
   result ~ -1 + time_avg_lead,
   data = train_df,
-  family = "binomial"
+  family = "binomial",
+  refresh = 0
 )
 
 test <- nfl_mvt_season(2022)
@@ -97,6 +93,14 @@ df_2022 <- test_df %>%
   group_by(team) %>%
   summarize(exp_wp = mean(exp_wp, na.rm = T),
             .groups = "drop")
+
+```
+
+### Pythagorean Win Expectancy
+
+Next, I assemble the information to calculate the Pythagorean Win Expectation, Actual Wins, and the tow "Win Luck" estimates.
+
+```{r}
 
 home_2022 <- load_pbp(2022) %>%
   filter(season_type == "REG") %>%
@@ -146,16 +150,20 @@ team_2022 <- rbind(
 
 ```
 
+Note, the "actual" wins for BUF and CIN are estimates too, in that their 16 game win percentage is extrapolated to 17 games to calculate actual wins.
+
+## Model Summary
+
 The summary for the time average win expectation model:
 
 ```{r}
 
-summary(model)
+summary(model,
+        digits = 3)
 
 ```
 
-
-### Plot
+## Plot
 
 ```{r}
 
