@@ -1,0 +1,164 @@
+---
+title: "Buffet and Munger"
+description: |
+  A collection of quotes.
+author:
+  - name: Casey Caprini
+    url: {}
+date: 2023-05-31
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+### Intro
+
+This isn't sports related content, and contains no analysis.
+
+However, I've recently been listening to clips of Charlie Munger and Warren Buffett pretty often. Along the way, I pulled out some interesting quotes, many which pertain to decision making or sense-making under uncertainty.
+
+### Quotes
+
+> "I think he also asked, 'How do you forecast these improvements in P/E ratios?'
+>  Around here, I would say, 'If our predictions have been a little better than
+>  other people's, it's because we tried to make fewer of them.'"
+>
+>  --- Charlie Munger, 1998 Berkshire Hathaway Annual Meeting
+
+
+> "All options have value, and people that get options usually understand that
+>  better than people who give options... It is the nature of prices in this world
+>  to change and economic conditions to change, and an option is a chance to
+>  participate in the change without give up anything other than that original
+>  premium you pay."
+>
+>  --- Warren Buffett, 2002 Berkshire Hathaway Annual Meeting
+
+
+> "If you had to double your money by the end of the year or be shot, you know
+>  then I would head for the futures market because you need to do it. You have to
+>  introduce borrowed money."
+>
+>  --- Warren Buffett, 1997 Berkshire Hathaway Annual Meeting
+
+
+> "The world changed. Before he died... Ben Graham recognized that the exact
+>  way he sought under-valued companies wouldn't necessarily work for all times
+>  under all conditions. That's certainly the way it worked for us. We gradually
+>  morphed into trying to buy the better companies when they were underpriced
+>  instead of the lousy companies when they were underpriced."
+>
+>  --- Charlie Munger, 2018 Berkshire Hathaway Annual Meeting
+
+
+> "Time is the friend of the wonderful business: you keep compounding, it keeps
+>  doing  more business, and keeps making more money. Time is the enemy of the
+>  lousy business."
+>
+>  --- Warren Buffett
+
+
+> "I think in the last analysis everything we do come back to opportunity cost...
+>  To some considerable extent, we are guessing at our future opportunity cost.
+>  Warren is basically saying that he's guessing that [he'll have opportunities]
+>  in due course to put out money at pretty attractive rates of return, and therefore
+>  he's not going to waste a lot of firepower at lower returns. But that's an
+>  opportunity cost calculation."
+>
+>  --- Charlie Munger, 2003 Berkshire Hathaway Annual Meeting
+
+
+> "A business, or any economic asset, is going to be worth what it produces in the
+>  way of cash over its lifetime... All investment is is laying out some money now
+>  to get more money back in the future. Now there's two ways to look at the getting
+>  money back. One is from what the asset itself will produce: that's investment. One
+>  is from what somebody else will pay you for it later on, irrespective of what the
+>  asset produces, and I call that speculation."
+>
+>  --- Warren Buffett, 2002 Berkshire Hathaway Annual Meeting
+
+
+> "As a general matter, there are only two reasons to buy insurance. One is to
+>  protect yourself against a loss that you are unable or unwilling to bear
+>  yourself... The second reason... is if you think the insurance company is actually
+>  selling you a policy that is too cheap... We try to avoid selling the second kind
+>  and concentrate on selling the first kind."
+>
+>  --- Warren Buffett, 1995 Berkshire Hathaway Annual Meeting
+
+
+> "There are certain companies that are exposing themselves... to losses that would
+>  wipe them out, and they prefer not to be re-insurance because it's 'expensive.'
+>  What they are really doing is betting on something that won't happen very often
+>  happening not at all."
+>
+>  --- Warren Buffett, 1995 Berkshire Hathaway Annual Meeting
+
+
+> "You do something, and the market goes up, and you get paid and rewarded and
+>  applauded and what have you: you're getting a lot reinforcement if you make a
+>  bet in the market and the market goes with you. Also, there's social proof...
+>  the prices in the market are the ultimate form of social proof, reflecting what
+>  other people think. The combination is very powerful. Why would you expect general
+>  market levels to always be totally efficient?"
+>
+>  --- Charlie Munger, The Psychology of Human Misjudgement
+
+
+> "You've got to array facts on theory structures, answering the question, 'Why?'.
+>  If you don'te do that... you cannot handle the world."
+>
+>  --- Charlie Munger, The Psychology of Human Misjudgement
+
+
+> "Clinical training in medical schools... here's a profoundly correct way of
+>  understanding psychology. The standard practice is watch one, do one, teach one.
+>  Boy does that pound in what you want pounded in!"
+>
+>  --- Charlie Munger, The Psychology of Human Misjudgement
+
+
+> "Someone once said, 'The chains of habit are too light to be felt until they are
+>  too heavy to be broken.'"
+>
+>  --- Warren Buffett
+
+
+> "I'd rather buy a wonderful business at a fair price than a fair business at a
+>  wonderful price."
+>
+>  --- Warren Buffett
+
+
+> "You have to understand one thing about the Fed: it's not as powerful as the
+>  mystique would make it. It's brake is better than it's gas pedal. When the Fed
+>  wants to put it's foot on the brake, we go through the windshield... Stepping on
+>  the gas does not necessarily get the same result."
+>
+>  --- Warren Buffett
+
+
+> "It's a terrible mistake to sleep-walk through life... If you are in a position
+>  to make choices, I always tell the kids that come visit me to go to work for an
+>  organization that you admire or an individual that you admire. That means that
+>  many of them become self-employed, but..."
+>
+>  --- Warren Buffett, 2008 Berkshire Hathaway Annual Meeting
+
+
+> "What the human being is best at doing is interpreting all new information so
+>  that their prior conclusions remain intact... That is a talent that everyone
+>  seems to have mastered."
+>
+>  --- Warren Buffett, 2002 Berkshire Hathaway Annual Meeting
+
+
+> "Black-Scholes is what I would call a 'know-nothing' value system. If you don't
+>  know anything at all about value compared with price---in other words, if price
+>  is teaching you all that can be known---then Black-Scholes, on a very short-term
+>  basis, is a pretty good guess... The minute you get into longer-term options,
+>  where you don't have the 'know-nothing' factor so extreme, it's crazy to use
+>  Black-Scholes. People use it because they want some kind of mechanical system."
+>
+>  --- Charlie Munger
