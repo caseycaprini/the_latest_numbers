@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/2023-11-15-post-week-10-tails-update/",
+    "title": "Post Week 10 TAILS Update",
+    "description": "Time Average Inpredictable Line Smidge",
+    "author": [
+      {
+        "name": "Casey Caprini",
+        "url": {}
+      }
+    ],
+    "date": "2023-11-15",
+    "categories": [],
+    "contents": "\r\nLoad Libraries\r\n\r\n\r\nShow code\r\n\r\nlibrary(tidyverse)\r\nlibrary(nflfastR)\r\nlibrary(nfltools)\r\nlibrary(nflplotR)\r\n\r\n\r\nGet Time Average Lead Data\r\n\r\n\r\nShow code\r\n\r\nraw_df <-\r\n  nfltools::nfl_mvt_season(2023)\r\n\r\n\r\nCalculate TAILS Adjustment\r\n\r\n\r\nShow code\r\n\r\ntails <-\r\n  raw_df %>%\r\n  filter(!(is.na(opponent))) %>%\r\n  mutate(\r\n    adj_time_avg_lead = time_avg_lead + (0.5 * team_spread)\r\n  ) %>%\r\n  group_by(team) %>%\r\n  slice_tail(n = 5) %>%\r\n  summarize(\r\n    tails = mean(adj_time_avg_lead),\r\n    .groups = \"drop\"\r\n  ) %>%\r\n  mutate(\r\n    tails = 0.2 * tails\r\n  )\r\n\r\ninpred <-\r\n  # This is a function I wrote as my first bit of\r\n  # webscraping code. It retrieves info from the\r\n  # inpredictable power ratings at the time it is run.\r\n  get_current_inpredictable()\r\n\r\ninpred <-\r\n  left_join(\r\n    inpred,\r\n    tails\r\n  ) %>%\r\n  mutate(\r\n    adj_gpf = gpf + tails\r\n  )\r\n\r\n\r\nPlot\r\n\r\n\r\nShow code\r\n\r\np_adj_gpf <-\r\n  inpred %>%\r\n  ggplot(\r\n    aes(\r\n      x = gpf,\r\n      y = reorder(factor(team),\r\n                  adj_gpf)\r\n    )\r\n  ) +\r\n  geom_vline(\r\n    xintercept = 0,\r\n    linetype = \"dashed\"\r\n  ) +\r\n  geom_segment(\r\n    aes(\r\n      x = gpf,\r\n      xend = adj_gpf,\r\n      yend = team\r\n    ),\r\n    arrow = arrow(\r\n      type = \"closed\",\r\n      length = unit(\r\n        0.1, \"cm\"\r\n      )\r\n    )\r\n  ) +\r\n  geom_point() +\r\n  geom_nfl_logos(\r\n    aes(\r\n      team_abbr = team,\r\n      x = adj_gpf),\r\n    width = 0.04,\r\n    alpha = 0.4\r\n  ) +\r\n  scale_x_continuous(\r\n    breaks = seq(-18, 18, by = 3),\r\n    minor_breaks = NULL\r\n  ) +\r\n  scale_y_discrete(\r\n    labels = NULL,\r\n    breaks = NULL\r\n  ) +\r\n  labs(\r\n    x = \"TAILS Adjusted Generic Points Favored\",\r\n    y = NULL,\r\n    title = \"Post Week 10 NFL Power Rankings\",\r\n    subtitle = \"As of 11/14/2023.\",\r\n    caption = \"Baseline: inpredictable.com Betting Market Ratings\\nMy silly adjustment calculated using nflfastR data.\"\r\n  ) +\r\n  theme_light()\r\n\r\nggsave(\r\n  \"post_week_10_tails_adj_gpf.png\",\r\n  plot = p_adj_gpf,\r\n  width = 6,\r\n  height = 4.5,\r\n  units = \"in\",\r\n  dpi = \"retina\"\r\n)\r\n\r\n\r\n\r\nTable\r\n\r\n\r\nShow code\r\n\r\ninpred %>%\r\n  select(\r\n    team, gpf, tails, adj_gpf\r\n  ) %>%\r\n  arrange(\r\n    desc(adj_gpf)\r\n  ) %>%\r\n  mutate(\r\n    tails = round(tails, 2),\r\n    adj_gpf = round(adj_gpf, 2),\r\n    rank = row_number()\r\n  ) %>%\r\n  knitr::kable()\r\n\r\nteam\r\ngpf\r\ntails\r\nadj_gpf\r\nrank\r\nSF\r\n7.6\r\n0.35\r\n7.95\r\n1\r\nBAL\r\n5.6\r\n1.72\r\n7.32\r\n2\r\nKC\r\n6.6\r\n0.33\r\n6.93\r\n3\r\nDAL\r\n5.5\r\n0.39\r\n5.89\r\n4\r\nPHI\r\n5.8\r\n-0.03\r\n5.77\r\n5\r\nMIA\r\n4.9\r\n-0.35\r\n4.55\r\n6\r\nCIN\r\n3.4\r\n0.61\r\n4.01\r\n7\r\nDET\r\n3.3\r\n-0.02\r\n3.28\r\n8\r\nLAC\r\n2.2\r\n0.57\r\n2.77\r\n9\r\nJAX\r\n1.5\r\n0.74\r\n2.24\r\n10\r\nBUF\r\n2.9\r\n-1.27\r\n1.63\r\n11\r\nCLE\r\n1.3\r\n-0.09\r\n1.21\r\n12\r\nSEA\r\n0.4\r\n-0.58\r\n-0.18\r\n13\r\nNO\r\n0.4\r\n-1.23\r\n-0.83\r\n14\r\nDEN\r\n-1.9\r\n0.61\r\n-1.29\r\n15\r\nPIT\r\n-1.2\r\n-0.24\r\n-1.44\r\n16\r\nMIN\r\n-3.0\r\n1.33\r\n-1.67\r\n17\r\nWAS\r\n-2.2\r\n0.45\r\n-1.75\r\n18\r\nHOU\r\n-2.4\r\n0.34\r\n-2.06\r\n19\r\nTB\r\n-2.0\r\n-0.17\r\n-2.17\r\n20\r\nIND\r\n-2.3\r\n0.05\r\n-2.25\r\n21\r\nATL\r\n-1.9\r\n-0.48\r\n-2.38\r\n22\r\nGB\r\n-2.2\r\n-0.47\r\n-2.67\r\n23\r\nLA\r\n-2.1\r\n-0.88\r\n-2.98\r\n24\r\nNE\r\n-3.2\r\n0.00\r\n-3.20\r\n25\r\nTEN\r\n-3.2\r\n-0.11\r\n-3.31\r\n26\r\nNYJ\r\n-3.0\r\n-0.36\r\n-3.36\r\n27\r\nLV\r\n-4.8\r\n0.17\r\n-4.63\r\n28\r\nCHI\r\n-5.4\r\n0.03\r\n-5.37\r\n29\r\nARI\r\n-6.0\r\n-0.07\r\n-6.07\r\n30\r\nCAR\r\n-6.6\r\n-0.54\r\n-7.14\r\n31\r\nNYG\r\n-9.4\r\n-0.22\r\n-9.62\r\n32\r\n\r\n\r\n\r\n\r\n",
+    "preview": "posts/2023-11-15-post-week-10-tails-update/post_week_10_tails_adj_gpf.png",
+    "last_modified": "2023-11-15T00:26:36-05:00",
+    "input_file": "post-week-10-tails-update.knit.md"
+  },
+  {
     "path": "posts/2023-11-07-post-week-9-tails-update/",
     "title": "Post Week 9 TAILS Update",
     "description": "Time Average Inpredictable Line Smidge",
