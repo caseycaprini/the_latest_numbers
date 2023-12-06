@@ -1,0 +1,125 @@
+---
+title: "Part I: Win Probability as a Stochastic Process"
+description: |
+  A novice's description of the Bachelier model for option pricing.
+author:
+  - name: Casey Caprini
+    url: {}
+date: 2023-12-04
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+---
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+```{r load_libraries, include=FALSE}
+
+library(tidyverse)
+
+```
+
+## A Novice's Guide to the Simplest Option Pricing Model
+
+### Binary European Call Option
+
+Let's unpack that.
+
+* <i>Option</i> - The right, but not the obligation, to buy (call) or sell (put) an underlying asset at a predetermined <i>"strike"</i> price.
+* <i>European</i> - Type of option where the option can only be exercised at its expiration date.
+* <i>Binary</i> - Option that is worth either 1 (e.g., underlying asset price is greater than strike at expiration for a call) or 0.
+
+### The Bachelier Model
+
+How do you price an option now that may or may not have value at a pre-defined expiration date? A common approach in quantitative finance is to assign a dynamic to the underlying asset price.  Given this assumed dynamic, one can either use stochastic calculus or simulate several trajectories of the underlying to determine a price based on this ensemble of possible trajectories.
+
+The Bachelier Model is the simplest such model.
+
+* Ignore the opportunity cost of risk-free return on the option's price ("premium").
+* Assume <i>T</i> discrete periods until expiration.
+* Assume each period is independent.
+
+The threat of arbitrage forces the underlying's price to be a martingale: that is, in expectation, the price at the next period must be the price at the current period (otherwise, a risk-free profit could be obtained).
+
+By assumption, we'll fix the volatility of the asset and assume each period's change in follows a Normal distribution.
+
+Therefore, the change in price each period can be modeled as a random normal with mean 0 and a fixed standard deviation.
+
+### Analytical Approach
+
+Assume the change in price of the underlying at each period is normally distributed with mean 0 and standard deviation \sigma.
+
+Assume there are <i>T</i> discrete periods until expiration.
+
+A basic result from probability is that the sum of independent normals is itself a normal, where the summation's mean is the sum of the combined means and the summation's variance is the sum of the combined variances.
+
+Then the price of the underlying asset at time <i>T</i> is the initial price plus a normally distributed variable.
+
+$$
+P_t = P_0 + \sum_{i = 1}^{T}(N(0, \sigma))
+$$
+
+Each period's variance is $$\sigma ^ 2$$.
+
+The variance for T periods is $$T(\sigma ^ 2)$$.
+
+The standard deviation for T periods is $$\sqrt{T} * \sigma$$.
+
+#### Concrete Example
+
+Assume the current price of an underlying is \$100.  Assume the underlying's daily price movements follow a normal distribution with mean 0 and standard deviation 1.  Price a binary call option that expires after 25 days and is either (1) worth \$1 if the underlying's price exceeds \$110 or (2) expires worthless otherwise.
+
+After 25 days, the change in the underlying's prices is normally distributed with standard deviation $$\sqrt{25}*1 = 5$$.
+
+What's the probability of a \$10 price increase for the underlying?  That's two standard deviations above the mean of 0.  Using the usual rules of thumb, about 4% of observations are greater than 2 standard deviations away from the mean (above or below).  So a \$10 increase should be have about a 2% chance.
+
+```{r}
+
+sd <-
+  sqrt(25)
+
+pnorm(10, mean = 0, sd = sd, lower.tail = F) %>%
+  round(., digits = 3)
+
+```
+
+Therefore, the expected value of this binary call (under this model's assumptions) is roughly \$0.02.
+
+#### Simulation Approach
+
+```{r}
+
+sim_trajectory <- function(price_init = 100, mean = 0, period_sd = 1, periods = 25){
+  
+  p_0 <- price_init
+  
+  p_t <- rep(NA_real_, periods)
+  
+  period_price_changes <- rnorm(n = periods, mean = mean, sd = period_sd)
+  
+  for(i in 1:periods){
+    if(i == 1){
+      p_t[i] = p_0 + period_price_changes[i]
+    } else {
+      p_t[i] = p_t[i -1] + period_price_changes[i]
+    }
+  }
+  
+  return(p_t[periods])
+}
+
+final_prices <-
+  replicate(10000, sim_trajectory())
+
+hist(final_prices)
+
+sum(final_prices > 110)/length(final_prices)
+
+```
+
