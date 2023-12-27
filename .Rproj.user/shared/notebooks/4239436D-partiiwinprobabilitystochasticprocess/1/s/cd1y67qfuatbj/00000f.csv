@@ -1,0 +1,14 @@
+"0","empirical_df <-
+  df %>%
+  #filter(vegas_home_wp %in% c(0, 1, 0.9975) == F) %>%
+  group_by(game_seconds_played, vegas_home_wp) %>%
+  summarize(lower_bound_1 = quantile(vegas_home_wpa, pnorm(-1)),
+            lower_bound_2 = quantile(vegas_home_wpa, pnorm(-2)),
+            median = quantile(vegas_home_wpa, 0.5),
+            upper_bound_1 = quantile(vegas_home_wpa, pnorm(1)),
+            upper_bound_2 = quantile(vegas_home_wpa, pnorm(2)),
+            n = n())
+"
+"1","[38;5;232m`summarise()` has grouped output by 'game_seconds_played'. You can
+override using the `.groups` argument.[39m
+"

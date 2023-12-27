@@ -1,0 +1,161 @@
+---
+title: "Part I: Win Probability as a Stochastic Process"
+description: |
+  Toward a Dynamic: Some statistical properties of Win Probability Added.
+author:
+  - name: Casey Caprini
+    url: {}
+date: 2023-12-27
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+preview: wpa_by_pre-snap_wp_and_time.png
+---
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+```{r load_libraries, include=FALSE}
+
+library(tidyverse)
+library(nflfastR)
+
+```
+
+### Background
+
+In [Part I](https://caseycaprini.github.io/the_latest_numbers/posts/2023-12-04-partiwinprobabilitystochasticprocess/) of this series, I provide the most basic of introductions to options pricing, describing a simplified Bachelier model for a binary call option. The real point is to introduce the quantitative finance idea of valuing something on the basis of a stochastic process: simulate many possible paths for an assumed dynamic, and determine the value of an instrument based on the distribution of the simulated outcomes.
+
+Here, I examine the dynamics of NFL win probability forecasts: specifically, I look at the `nflfastR` win probability model predictions that incorporates the pre-game Vegas line (i.e., vegas_wpa, vegas_home_wpa, vegas_wp, vegas_home_wp). For a technical description of the model (or something close to it), see it's creator's ([Ben Baldwin](https://twitter.com/benbbaldwin)), article [here](https://opensourcefootball.com/posts/2021-04-13-creating-a-model-from-scratch-using-xgboost-in-r/).
+
+My interest in the topic is based on an idea I encountered in a Nassim Taleb video on YouTube, summarized in the introduction to a paper on [election forecasting dynamics](https://arxiv.org/pdf/1703.06351.pdf).
+
+> A standard result in quantitative finance is that when the
+> volatility of the underlying security increases, arbitrage
+> pressures push the corresponding binary option to trade closer
+> to 50%, and become less variable over the remaining time
+> to expiration. Counterintuitively, the higher the uncertainty of
+> the underlying security, the lower the volatility of the binary
+> option.
+> 
+> - Nassim Taleb
+
+Previously, I explored some tests for [excess movement in win probability streams](https://caseycaprini.github.io/the_latest_numbers/posts/2022-10-15-nflfastr-win-prob-excessmovement/) for the NFL (`nflfastr` model) and MLB (MLB.com data) based on a paper by [Ned Augenblick and Matthew Rabin](https://faculty.haas.berkeley.edu/ned/AugenblickRabin_MovementUncertainty.pdf).
+
+### Intuition
+
+Treating each in-game win probability estimate as a price, then the threat of arbitrage forces the win probability stream to be a martingale: “knowledge of the past will be of no use in predicting the future” and “the direction of anticipated future swings… should be already baked into the current prediction” ([from Andrew Gelman et al, 2020](http://www.stat.columbia.edu/~gelman/research/published/jdm200907b.pdf)). Therefore, Win Probability Added should be 0 in expectation.
+
+The Taleb quote describes the effects of uncertainty in pulling predictions toward a coin flip (50%) and the impact of uncertainty on win probability streams.  What are the systematic sources of uncertainty in an NFL win probability stream?
+
+* Time remaining. The greater the amount of time remaining, the greater the uncertainty in the final outcome. Therefore, for a given pre-snap Win Probability, we should expect lower volatility (i.e., smaller variance in Win Probability Added) for plays earlier in games and higher volatility near the end of games.
+* Pre-snap Win Probability. The pre-snap Win Probability should already incorporate the outstanding uncertainty in the contest. Therefore, for a given amount of time remaining, we should expect lower volatility (i.e., smaller variance in Win Probability Added) for plays with pre-snap Win Probabilities closer to either 1 or 0 than plays with pre-snap Win Probabilities closer to 50%.
+
+#### Acquire Data
+
+I'll acquire the data from `nflfastR` and then prepare it for plotting.
+
+For convenience, I'll look at win probabilities for home teams only, from 2017 until the time time of publishing.
+
+As described above, I want to be able to look across time for a given Win Probability. Therefore, I do some grouping by time remaining and pre-snap Win Probability to get a more reasonable number of points in each "bucket."
+
+Then, I find some empirical Win Probability quantiles in each pre-snap Win Probability/Time in Game bucket.
+
+```{r get_data_shape_data}
+
+pbp_df <- load_pbp(2017:2023)
+
+df <- pbp_df %>%
+  filter(is.na(vegas_home_wpa) == F) %>%
+  mutate(vegas_home_wp = cut_width(vegas_wp, width = 0.05, center = 0.5),
+         game_seconds_played = 3600 - game_seconds_remaining,
+         game_seconds_played = cut_width(game_seconds_played,
+                                         center = 1800,
+                                         width = 60)) %>%
+  filter(game_half != "Overtime") %>%
+  filter(game_seconds_played != 0)
+
+# Via https://stackoverflow.com/questions/22312207/how-to-assign-cut-range-midpoints-in-r
+# The cut_width function provides intervals
+# To plot, I want the midpoint.  This function
+# does so by removing the interval notation
+# (e.g., open/close brackets or parentheses,
+# comma between values) and taking the mean
+# of the interval boundaries.
+get_midpoint <- function(cut_label) {
+  mean(as.numeric(unlist(strsplit(gsub("\\(|\\)|\\[|\\]", "",
+                                       as.character(cut_label)), ","))))
+}
+
+df$vegas_home_wp <-
+  sapply(df$vegas_home_wp, get_midpoint)
+
+df$game_seconds_played <-
+  sapply(df$game_seconds_played, get_midpoint)
+
+empirical_df <-
+  df %>%
+  group_by(game_seconds_played, vegas_home_wp) %>%
+  summarize(lower_bound_1 = quantile(vegas_home_wpa, pnorm(-1)),
+            lower_bound_2 = quantile(vegas_home_wpa, pnorm(-2)),
+            median = quantile(vegas_home_wpa, 0.5),
+            upper_bound_1 = quantile(vegas_home_wpa, pnorm(1)),
+            upper_bound_2 = quantile(vegas_home_wpa, pnorm(2)),
+            n = n())
+
+```
+
+#### Plot Data
+
+```{r plot_data}
+
+p_wpa <-
+  empirical_df %>%
+  filter(vegas_home_wp %in% c(0, 1, 0.9975) == F) %>%
+  ggplot(aes(x = game_seconds_played/60,
+             y = vegas_home_wp,
+             group = vegas_home_wp)) +
+  geom_ribbon(aes(ymin = lower_bound_2,
+                  ymax = upper_bound_2)) +
+  geom_ribbon(aes(ymin = lower_bound_1,
+                  ymax = upper_bound_1),
+              fill = "dark gray") +
+  geom_path(aes(y = median),
+            color = "blue") +
+  theme_light() +
+  scale_x_continuous(breaks = c(0, 15, 30, 45, 60),
+                     minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(-0.5, 0.5, 0.25),
+                     minor_breaks = NULL) +
+  facet_wrap(~ vegas_home_wp) +
+  labs(x = "Minutes Played",
+       y = "WPA (1 and 2 SD Intervals)",
+       title = "Distribution of WPA by Pre-snap WP",
+       subtitle = "nflfastR Vegas-informed WP Model",
+       caption = "Data: nflfastR")
+
+ggsave(
+  filename = "wpa_by_pre-snap_wp_and_time.png",
+  plot = p_wpa,
+  height = 5.5,
+  width = 5,
+  units = "in",
+  dpi = "retina"
+)
+
+```
+
+![](wpa_by_pre-snap_wp_and_time.png)
+
+#### Observations
+
+The data matches the expected patterns pretty well. Across all pre-snap WP, the median WPA is near 0 (blue line).
+
+As time remaining decreases, the variance of WPA increases signficantly.
+
+As pre-snap WP approaches 0 or 1, WPA tends toward 0.  The variance of WPA for each slice of time is the highest at pre-snap WP of 50%.
