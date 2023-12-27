@@ -65,7 +65,7 @@ Consider each in-game win probability (WP) estimate as a price. The threat of ar
 The Taleb quote describes some effects of uncertainty.
 
 * As uncertainty increases, WP estimates get pulled toward 0.5 (a coin flip, maximum ignorance).
-* As uncertainty increases, the volatility of a WP stream should increase.
+* As uncertainty increases, the volatility of a WP stream should decrease.
 
 What are the systematic sources of uncertainty in an NFL WP stream?
 
