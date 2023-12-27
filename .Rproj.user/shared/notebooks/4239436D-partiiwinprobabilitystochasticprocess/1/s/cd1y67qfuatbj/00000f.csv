@@ -1,14 +1,49 @@
-"0","empirical_df <-
-  df %>%
-  #filter(vegas_home_wp %in% c(0, 1, 0.9975) == F) %>%
-  group_by(game_seconds_played, vegas_home_wp) %>%
-  summarize(lower_bound_1 = quantile(vegas_home_wpa, pnorm(-1)),
-            lower_bound_2 = quantile(vegas_home_wpa, pnorm(-2)),
-            median = quantile(vegas_home_wpa, 0.5),
-            upper_bound_1 = quantile(vegas_home_wpa, pnorm(1)),
-            upper_bound_2 = quantile(vegas_home_wpa, pnorm(2)),
-            n = n())
+"0",""
+"0","pbp_df <- load_pbp(2017:2023)"
+"1","Note: nflreadr caches (i.e., stores a saved version) data by default.
+If you expect different output try one of the following:
+[34mℹ[39m Restart your R Session or
+[34mℹ[39m Run `nflreadr::.clear_cache()`.
+To disable this warning, run `options(nflreadr.verbose = FALSE)` or add it to your .Rprofile
+[90mThis message is displayed once every 8 hours.[39m
 "
+"0","df <- pbp_df %>%"
+"0","  filter(is.na(vegas_home_wpa) == F) %>%"
+"0","  mutate(vegas_home_wp = cut_width(vegas_wp, width = 0.05, center = 0.5),"
+"0","         game_seconds_played = 3600 - game_seconds_remaining,"
+"0","         game_seconds_played = cut_width(game_seconds_played,"
+"0","                                         center = 1800,"
+"0","                                         width = 60)) %>%"
+"0","  filter(game_half != ""Overtime"") %>%"
+"0","  filter(game_seconds_played != 0)"
+"0",""
+"0","# Via https://stackoverflow.com/questions/22312207/how-to-assign-cut-range-midpoints-in-r"
+"0","# The cut_width function provides intervals"
+"0","# To plot, I want the midpoint.  This function"
+"0","# does so by removing the interval notation"
+"0","# (e.g., open/close brackets or parentheses,"
+"0","# comma between values) and taking the mean"
+"0","# of the interval boundaries."
+"0","get_midpoint <- function(cut_label) {"
+"0","  mean(as.numeric(unlist(strsplit(gsub(""\\(|\\)|\\[|\\]"", """","
+"0","                                       as.character(cut_label)), "",""))))"
+"0","}"
+"0",""
+"0","df$vegas_home_wp <-"
+"0","  sapply(df$vegas_home_wp, get_midpoint)"
+"0",""
+"0","df$game_seconds_played <-"
+"0","  sapply(df$game_seconds_played, get_midpoint)"
+"0",""
+"0","empirical_df <-"
+"0","  df %>%"
+"0","  group_by(game_seconds_played, vegas_home_wp) %>%"
+"0","  summarize(lower_bound_1 = quantile(vegas_home_wpa, pnorm(-1)),"
+"0","            lower_bound_2 = quantile(vegas_home_wpa, pnorm(-2)),"
+"0","            median = quantile(vegas_home_wpa, 0.5),"
+"0","            upper_bound_1 = quantile(vegas_home_wpa, pnorm(1)),"
+"0","            upper_bound_2 = quantile(vegas_home_wpa, pnorm(2)),"
+"0","            n = n())"
 "1","[38;5;232m`summarise()` has grouped output by 'game_seconds_played'. You can
 override using the `.groups` argument.[39m
 "

@@ -1,5 +1,5 @@
 ---
-title: "Part I: Win Probability as a Stochastic Process"
+title: "Part II: Win Probability as a Stochastic Process"
 description: |
   Toward a Dynamic: Some statistical properties of Win Probability Added.
 author:
@@ -10,6 +10,7 @@ output:
   distill::distill_article:
     self_contained: false
     code_folding: true
+    mathjax: local
 preview: wpa_by_pre-snap_wp_and_time.png
 ---
 
@@ -29,32 +30,47 @@ library(nflfastR)
 
 ### Background
 
-In [Part I](https://caseycaprini.github.io/the_latest_numbers/posts/2023-12-04-partiwinprobabilitystochasticprocess/) of this series, I provide the most basic of introductions to options pricing, describing a simplified Bachelier model for a binary call option. The real point is to introduce the quantitative finance idea of valuing something on the basis of a stochastic process: simulate many possible paths for an assumed dynamic, and determine the value of an instrument based on the distribution of the simulated outcomes.
+In [Part I](https://caseycaprini.github.io/the_latest_numbers/posts/2023-12-04-partiwinprobabilitystochasticprocess/) of this series, I provided the most basic of introductions to options pricing, describing a simplified Bachelier model for a binary call option. The real point was to introduce the quantitative finance idea of valuing something on the basis of a stochastic process: simulate many possible paths for an assumed dynamic, and determine the value of an instrument based on the distribution of the simulated outcomes.
 
-Here, I examine the dynamics of NFL win probability forecasts: specifically, I look at the `nflfastR` win probability model predictions that incorporates the pre-game Vegas line (i.e., vegas_wpa, vegas_home_wpa, vegas_wp, vegas_home_wp). For a technical description of the model (or something close to it), see it's creator's ([Ben Baldwin](https://twitter.com/benbbaldwin)), article [here](https://opensourcefootball.com/posts/2021-04-13-creating-a-model-from-scratch-using-xgboost-in-r/).
+Here, I examine the dynamics of NFL win probability forecasts: specifically, I look at the `nflfastR` win probability model that incorporates the pre-game Vegas line (i.e., `vegas_wpa`, `vegas_home_wpa`, `vegas_wp`, `vegas_home_wp`). For a technical description of the model (or something close to it), see it's creator's ([Ben Baldwin](https://twitter.com/benbbaldwin)) article [here](https://opensourcefootball.com/posts/2021-04-13-creating-a-model-from-scratch-using-xgboost-in-r/).
 
-My interest in the topic is based on an idea I encountered in a Nassim Taleb video on YouTube, summarized in the introduction to a paper on [election forecasting dynamics](https://arxiv.org/pdf/1703.06351.pdf).
+My interest in the topic was sparked by a [Nassim Taleb video on YouTube](https://www.youtube.com/watch?v=YRvPF__du9w), summarized by the opening quote in the introduction to a Taleb paper on [election forecasting dynamics](https://arxiv.org/pdf/1703.06351.pdf).
 
-> A standard result in quantitative finance is that when the
+> "A standard result in quantitative finance is that when the
 > volatility of the underlying security increases, arbitrage
 > pressures push the corresponding binary option to trade closer
 > to 50%, and become less variable over the remaining time
 > to expiration. Counterintuitively, the higher the uncertainty of
 > the underlying security, the lower the volatility of the binary
-> option.
+> option."
 > 
-> - Nassim Taleb
+> Nassim Taleb
 
-Previously, I explored some tests for [excess movement in win probability streams](https://caseycaprini.github.io/the_latest_numbers/posts/2022-10-15-nflfastr-win-prob-excessmovement/) for the NFL (`nflfastr` model) and MLB (MLB.com data) based on a paper by [Ned Augenblick and Matthew Rabin](https://faculty.haas.berkeley.edu/ned/AugenblickRabin_MovementUncertainty.pdf).
+Previously, I explored some tests for [excess movement in win probability streams](https://caseycaprini.github.io/the_latest_numbers/posts/2022-10-15-nflfastr-win-prob-excessmovement/) for NFL (`nflfastR` model) and MLB (MLB.com data) games based on a paper by [Ned Augenblick and Matthew Rabin](https://faculty.haas.berkeley.edu/ned/AugenblickRabin_MovementUncertainty.pdf).
 
 ### Intuition
 
-Treating each in-game win probability estimate as a price, then the threat of arbitrage forces the win probability stream to be a martingale: “knowledge of the past will be of no use in predicting the future” and “the direction of anticipated future swings… should be already baked into the current prediction” ([from Andrew Gelman et al, 2020](http://www.stat.columbia.edu/~gelman/research/published/jdm200907b.pdf)). Therefore, Win Probability Added should be 0 in expectation.
+> "Volatility involves uncertain changes of state... Time and
+> chance happen to us all. A stock price that moves unpredictably
+> up and down is volatile. Its volatility reflects the unstable
+> equilibrium between two simultaneous but conflicting occurrences:
+> good news and bad news, the desire to buy and the desire to sell,
+> in permanent conflict. As in politics, there is no volatility
+> without conflict."
+> 
+> [Emanual Derman](https://whyisthisinteresting.substack.com/p/why-is-this-interesting-the-volatility)
 
-The Taleb quote describes the effects of uncertainty in pulling predictions toward a coin flip (50%) and the impact of uncertainty on win probability streams.  What are the systematic sources of uncertainty in an NFL win probability stream?
+Consider each in-game win probability (WP) estimate as a price. The threat of arbitrage forces the WP stream to be a martingale: “knowledge of the past will be of no use in predicting the future” and “the direction of anticipated future swings… should be already baked into the current prediction” ([from Andrew Gelman et al, 2020](http://www.stat.columbia.edu/~gelman/research/published/jdm200907b.pdf)). Therefore, Win Probability Added (WPA) should be 0 in expectation.
 
-* Time remaining. The greater the amount of time remaining, the greater the uncertainty in the final outcome. Therefore, for a given pre-snap Win Probability, we should expect lower volatility (i.e., smaller variance in Win Probability Added) for plays earlier in games and higher volatility near the end of games.
-* Pre-snap Win Probability. The pre-snap Win Probability should already incorporate the outstanding uncertainty in the contest. Therefore, for a given amount of time remaining, we should expect lower volatility (i.e., smaller variance in Win Probability Added) for plays with pre-snap Win Probabilities closer to either 1 or 0 than plays with pre-snap Win Probabilities closer to 50%.
+The Taleb quote describes some effects of uncertainty.
+
+* As uncertainty increases, WP estimates get pulled toward 0.5 (a coin flip, maximum ignorance).
+* As uncertainty increases, the volatility of a WP stream should increase.
+
+What are the systematic sources of uncertainty in an NFL WP stream?
+
+* <b>Time remaining</b>. The greater the amount of time remaining, the greater the uncertainty in the final outcome. Therefore, for a given pre-snap WP, we should expect lower volatility (i.e., smaller variance in WPA) early in games and increasing volatility as the game draws to a close.
+* <b>Pre-snap Win Probability</b>. The pre-snap WP should already incorporate the outstanding uncertainty in the contest. Therefore, for a given amount of time remaining, we should expect lower volatility (i.e., smaller variance in WPA) for plays with pre-snap WP closer to either 1 or 0 than plays with pre-snap WP closer to 0.5.
 
 #### Acquire Data
 
@@ -62,9 +78,9 @@ I'll acquire the data from `nflfastR` and then prepare it for plotting.
 
 For convenience, I'll look at win probabilities for home teams only, from 2017 until the time time of publishing.
 
-As described above, I want to be able to look across time for a given Win Probability. Therefore, I do some grouping by time remaining and pre-snap Win Probability to get a more reasonable number of points in each "bucket."
+As described above, I want to be able to look across time for a given WP. Therefore, I do some grouping by time remaining and pre-snap WP to get a more reasonable number of points in each "bucket."
 
-Then, I find some empirical Win Probability quantiles in each pre-snap Win Probability/Time in Game bucket.
+Then, I find some empirical WPA quantiles in each pre-snap WP/Time-in-Game bucket.
 
 ```{r get_data_shape_data}
 
@@ -154,8 +170,121 @@ ggsave(
 
 #### Observations
 
-The data matches the expected patterns pretty well. Across all pre-snap WP, the median WPA is near 0 (blue line).
+The data matches the expected patterns pretty well.
 
-As time remaining decreases, the variance of WPA increases signficantly.
+* Across all pre-snap WP and time-in-game combinations, the median WPA is near 0 (blue line).
+* As a game nears its conclusion (i.e., time remaining decreases), the variance of WPA increases significantly (empirical +/- 1 (normal) standard deviation band in gray, empirical +/- 2 (normal) standard deviation band in black).
+* As pre-snap WP approaches 0 or 1, WPA tends toward 0.  For each slice of time, the variance of WPA is the highest at pre-snap WP of 0.5.
 
-As pre-snap WP approaches 0 or 1, WPA tends toward 0.  The variance of WPA for each slice of time is the highest at pre-snap WP of 50%.
+### A Toy WP Dynamic
+
+Here, I introduce a toy dynamic for WP based on the preceding observations. The point is to develop a simple model that matches the `nflfastR` WP model well enough to develop some novel conclusions via a stochastic process approach.
+
+For simplicity, I'll assume WPA follows a Normal distribution.
+
+* The dynamic will be a function of time-in-game (i.e., game seconds played) and current pre-snap WP.
+* Consistent with the Martingale property discussed above, the mean WPA will be 0 for each play.
+
+#### WPA Stochastic Process Model
+
+$WPA \sim N(\mu = 0, SD = \sigma_{WP, t})$
+
+$\sigma_{WP, t} = 0.07 (0.5 - \lvert{WP - 0.5}\rvert) + \frac{75 ((0.5 - \lvert{WP - 0.5}\rvert))}{3875 - t}$
+
+Here, <i>t</i> is game seconds played.
+
+The "0.5 - |WP - 0.5|" term is just the distance from certainty (i.e, WP = 0 or WP = 1).
+
+```{r dist_from_certainty}
+
+wp_vector = seq(0.0, 1.0, by = 0.05)
+dist_from_certain = 0.5 - abs(wp_vector - 0.5)
+
+plot_df <-
+  data.frame(wp_vector, dist_from_certain)
+
+plot_df %>%
+  ggplot(aes(
+    x = wp_vector,
+    y = dist_from_certain
+  )) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_path(color = "dark gray") +
+  geom_point() +
+  theme_light()
+
+rm(wp_vector, dist_from_certain, plot_df)
+
+```
+
+The fractional term captures the growth in Var[WPA] as the game progresses. I picked a hyperbolic form to capture the rapid increase in Var[WPA] as games reach their conclusion and the digital resolution of (non-overtime) WP streams.
+
+The three constants were picked by trial-and-error, eyeballing the fit with the plot of the `nflfastR` model data above.
+
+#### WPA Stochastic Process Model Fit to nflfastR Data
+
+```{r plot_model_fit}
+
+stochastic_model <-
+  expand_grid(game_seconds_played = seq(0, 3600, by = 30),
+              wp = seq(0.05, 0.95, by = 0.05)) %>%
+  mutate(dist_from_certainty = 0.5 - abs(wp - 0.5)) %>%
+  mutate(wpa_sd_model = (0.07*dist_from_certainty) + ((75*dist_from_certainty)/(3875 - game_seconds_played))) %>%
+  mutate(vegas_home_wp = wp) %>%
+  mutate(lower_bound_1 = -1 * wpa_sd_model,
+         lower_bound_2 = -2 * wpa_sd_model,
+         upper_bound_1 = 1 * wpa_sd_model,
+         upper_bound_2 = 2 * wpa_sd_model)
+
+p_stochastic_fit <-
+  p_wpa +
+  geom_path(
+    aes(
+      x = game_seconds_played/60,
+      y = lower_bound_1
+    ),
+    data = stochastic_model,
+    color = "red"
+  ) +
+  geom_path(
+    aes(
+      x = game_seconds_played/60,
+      y = lower_bound_2
+    ),
+    data = stochastic_model,
+    color = "red"
+  ) +
+  geom_path(
+    aes(
+      x = game_seconds_played/60,
+      y = upper_bound_1
+    ),
+    data = stochastic_model,
+    color = "red"
+  ) +
+  geom_path(
+    aes(
+      x = game_seconds_played/60,
+      y = upper_bound_2
+    ),
+    data = stochastic_model,
+    color = "red"
+  )
+
+ggsave(
+  filename = "stochastic_fit.png",
+  plot = p_stochastic_fit,
+  height = 8,
+  width = 5,
+  units = "in",
+  dpi = "retina"
+)
+
+```
+
+![](stochastic_fit.png)
+
+That's clunky code, and I'm not really sure what is going on with the blank panels.
+
+Overall, the quantiles fit reasonably well. Again, the goal is to develop a simple model that matches the `nflfastR` WP model well enough to develop some novel conclusions via a stochastic process approach.
