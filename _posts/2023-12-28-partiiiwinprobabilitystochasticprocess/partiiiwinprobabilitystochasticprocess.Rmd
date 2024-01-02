@@ -354,6 +354,8 @@ ggsave(
 
 ```
 
+![](wp_time_value.png)
+
 (Visually, this plot reminds me of the concept of [time decay](https://www.merrilledge.com/investment-products/options/learn-understand-theta-options) in options trading, of which I know nearly nothing about.)
 
 ![Image from Merrill Edge Option Education Material linked above.](merrill-edge-options-chart-theta.jpeg)
@@ -438,7 +440,7 @@ p_final_wp_kickoff <-
                      minor_breaks = NULL) +
   theme_light() +
   labs(
-    x = "Halftime WP",
+    x = "WP (Opening Kickoff)",
     y = "Median Final WP",
     title = "Median Final WP: Opening Kickoff",
     subtitle = "10k Sims Each Point"
