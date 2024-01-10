@@ -1,0 +1,272 @@
+---
+title: "Part IV: Win Probability as a Stochastic Process"
+description: |
+  Some Top-down Analysis of nflfastR vegas_wp Model.
+author:
+  - name: Casey Caprini
+    url: {}
+date: 2024-01-10
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+    mathjax: local
+preview: .png
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+
+library(tidyverse)
+library(nflfastR)
+
+
+
+get_midpoint <- function(cut_label) {
+  mean(as.numeric(unlist(strsplit(gsub("\\(|\\)|\\[|\\]", "",
+                                       as.character(cut_label)), ","))))
+}
+
+
+raw_df <-
+  load_pbp(2017:2023)
+
+home_favorite <-
+  raw_df %>%
+  group_by(game_id) %>%
+  slice_head(n = 1) %>%
+  filter(vegas_home_wp >= 0.5) %>%
+  pull(game_id)
+
+df <-
+  raw_df %>%
+  filter(qtr %in% c(1, 2, 3, 4)) %>%
+  select(game_id, desc,
+         vegas_home_wp, vegas_home_wpa,
+         game_seconds_remaining) %>%
+  mutate(favorite_wp = ifelse(
+    game_id %in% home_favorite,
+    vegas_home_wp,
+    1 - vegas_home_wp
+  )) %>%
+  mutate(favorite_wpa = ifelse(
+    game_id %in% home_favorite,
+    vegas_home_wpa,
+    -1 * vegas_home_wpa
+  ))
+
+init_favorite_wp <-
+  df %>%
+  group_by(game_id) %>%
+  slice_head(n = 1) %>%
+  mutate(init_favorite_wp_binned = cut_width(
+    favorite_wp, width = 0.05, center = 0.525
+  )) %>%
+  mutate(init_favorite_wp_binned = map_dbl(
+    init_favorite_wp_binned, 
+    get_midpoint
+    )
+  ) %>%
+  select(game_id, favorite_wp, init_favorite_wp_binned)
+
+df_init_wp <-
+  df %>%
+  filter(desc != "GAME") %>%
+  mutate(game_seconds_played = 3600 - game_seconds_remaining) %>%
+  mutate(game_minutes_played_binned = cut_width(
+    game_seconds_played/60, width = 0.5, center = 0.0
+  )) %>%
+  group_by(game_id, game_minutes_played_binned) %>%
+  summarize(favorite_wp = mean(favorite_wp),
+            .groups = "drop") %>%
+  left_join(
+    init_favorite_wp %>%
+      select(game_id, init_favorite_wp_binned),
+    by = c("game_id" = "game_id")
+  ) %>%
+  group_by(game_minutes_played_binned, init_favorite_wp_binned) %>%
+  summarize(min = min(favorite_wp),
+            q_25 = quantile(favorite_wp, 0.25),
+            q_50 = quantile(favorite_wp, 0.5),
+            q_75 = quantile(favorite_wp, 0.75),
+            max = max(favorite_wp),
+            .groups = "drop") %>%
+  mutate(game_minutes_played_binned =
+           map_dbl(game_minutes_played_binned,
+                   get_midpoint)
+         ) %>%
+  pivot_longer(min:max,
+               names_to = "metric",
+               values_to = "value") %>%
+  mutate(metric = factor(metric,
+                         levels = c("min",
+                                    "q_25",
+                                    "q_50",
+                                    "q_75",
+                                    "max")
+                         )
+         )
+
+df_init_wp %>%
+  ggplot(
+    aes(
+      x = game_minutes_played_binned,
+      y = value
+    )
+  ) +
+  geom_point(aes(color = metric)) +
+  theme_light() +
+  facet_wrap(~ init_favorite_wp_binned) +
+  scale_x_continuous(
+    breaks = seq(0, 60, by = 15),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Minutes Played",
+       y = "WP")
+
+df_init_wp %>%
+  filter(game_minutes_played_binned == 58) %>%
+  filter(metric == "q_50") %>%
+  ggplot(aes(x = init_favorite_wp_binned,
+             y = value)) +
+  geom_vline(xintercept = c(0.5, 1.0),
+             linetype = "dashed") +
+  geom_hline(yintercept = c(0.5, 1.0),
+             linetype = "dashed") +
+  geom_abline(intercept = 0.0, slope = 1,
+              linetype = "dashed",
+              color = "dark gray") +
+  geom_path(color = "blue") +
+  geom_point() +
+  theme_light() +
+  scale_x_continuous(
+    labels = scales::percent,
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::percent,
+    minor_breaks = NULL
+  ) +
+  labs(x = "Opening Kickoff WP",
+       y = "Median WP Near Final 2-minute Warning")
+
+
+
+half_favorite_df <-
+  df %>%
+  filter(game_seconds_remaining <= 1800) %>%
+  group_by(game_id) %>%
+  slice_head(n = 1) %>%
+  mutate(half_favorite_wp = ifelse(vegas_home_wp > 0.5,
+                                   vegas_home_wp,
+                                   1 - vegas_home_wp),
+         half_favorite = ifelse(vegas_home_wp > 0.5,
+                                "home",
+                                "away")
+         ) %>%
+  mutate(half_favorite_wp_binned = cut_width(
+    half_favorite_wp, width = 0.05, center = 0.525
+  )) %>%
+  mutate(half_favorite_wp_binned =
+           map_dbl(half_favorite_wp_binned, 
+                   get_midpoint)
+         ) %>%
+  select(game_id, half_favorite_wp_binned, half_favorite)
+
+df_2nd_half <-
+  df %>%
+  filter(game_seconds_remaining <= 1800) %>%
+  mutate(game_seconds_played = 3600 - game_seconds_remaining) %>%
+  mutate(game_minutes_played_binned = cut_width(
+    game_seconds_played/60, width = 0.5, center = 0.0
+  )) %>%
+  left_join(
+    half_favorite_df %>%
+      select(game_id, half_favorite_wp_binned, half_favorite),
+    by = c("game_id" = "game_id")
+  ) %>%
+  mutate(half_favorite_wp = ifelse(half_favorite == "home",
+                                   vegas_home_wp,
+                                   1 - vegas_home_wp)
+  ) %>%
+  group_by(game_id, game_minutes_played_binned) %>%
+  summarize(
+    half_favorite_wp_binned = half_favorite_wp_binned,
+    half_favorite_wp = mean(half_favorite_wp),
+    .groups = "drop") %>%
+  group_by(game_minutes_played_binned, half_favorite_wp_binned) %>%
+  summarize(min = min(half_favorite_wp),
+            q_25 = quantile(half_favorite_wp, 0.25),
+            q_50 = quantile(half_favorite_wp, 0.5),
+            q_75 = quantile(half_favorite_wp, 0.75),
+            max = max(half_favorite_wp),
+            .groups = "drop") %>%
+  mutate(game_minutes_played_binned =
+           map_dbl(game_minutes_played_binned,
+                   get_midpoint)
+  ) %>%
+  pivot_longer(min:max,
+               names_to = "metric",
+               values_to = "value") %>%
+  mutate(metric = factor(metric,
+                         levels = c("min",
+                                    "q_25",
+                                    "q_50",
+                                    "q_75",
+                                    "max")
+  )
+  )
+
+df_2nd_half %>%
+  ggplot(
+    aes(
+      x = game_minutes_played_binned,
+      y = value
+    )
+  ) +
+  geom_point(aes(color = metric)) +
+  theme_light() +
+  facet_wrap(~ half_favorite_wp_binned) +
+  scale_x_continuous(
+    breaks = seq(0, 60, by = 15),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  coord_cartesian(xlim = c(0, 60)) +
+  labs(x = "Minutes Played",
+       y = "WP")
+  
+
+df_2nd_half %>%
+  filter(game_minutes_played_binned == 58) %>%
+  filter(metric == "q_50") %>%
+  ggplot(aes(x = half_favorite_wp_binned,
+             y = value)) +
+  geom_vline(xintercept = c(0.5, 1.0),
+             linetype = "dashed") +
+  geom_hline(yintercept = c(0.5, 1.0),
+             linetype = "dashed") +
+  geom_abline(intercept = 0.0, slope = 1,
+              linetype = "dashed",
+              color = "dark gray") +
+  geom_path(color = "blue") +
+  geom_point() +
+  theme_light() +
+  scale_x_continuous(
+    labels = scales::percent,
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::percent,
+    minor_breaks = NULL
+  ) +
+  labs(x = "WP to Open 2nd Half",
+       y = "Median WP Near Final 2-minute Warning")
+
+```
+
