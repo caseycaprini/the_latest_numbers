@@ -1,0 +1,10 @@
+"0","raw_df <-
+  load_pbp(2017:2023)
+"
+"1","Note: nflreadr caches (i.e., stores a saved version) data by default.
+If you expect different output try one of the following:
+[34mℹ[39m Restart your R Session or
+[34mℹ[39m Run `nflreadr::.clear_cache()`.
+To disable this warning, run `options(nflreadr.verbose = FALSE)` or add it to your .Rprofile
+[90mThis message is displayed once every 8 hours.[39m
+"

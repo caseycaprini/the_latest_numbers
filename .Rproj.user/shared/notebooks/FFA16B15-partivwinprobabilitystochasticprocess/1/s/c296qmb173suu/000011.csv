@@ -1,0 +1,12 @@
+"0","ggsave(
+  filename = ""pregame_favorite_wp_evolution.png"",
+  plot = p_pregame_wp_evolution,
+  height = 7.5,
+  width = 5,
+  units = ""in"",
+  dpi = ""retina""
+)
+"
+"2","Warning:"
+"2"," [38;5;232mRemoved 6 rows containing missing values (`geom_point()`).[39m
+"
