@@ -1,0 +1,539 @@
+---
+title: "cstm: Center of Spread and Total Margin"
+description: |
+  Using grid search to characterize ATS and total variation by NFL team.
+author:
+  - name: Casey Caprini
+date: 2025-01-01
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(nflfastR)
+library(nflplotR)
+
+```
+
+
+## Intro
+
+> cstm
+> Chuckling silently to myself.  Used similarly to lol, but
+> when you're not actually laughing out loud.
+> - Urban Dictionary
+
+Each NFL game has a spread and point total. Over the course of a year, is a team an 'over' team, or an under team? Is there any correlation between a team's over/under and ATS results?
+
+This is the kind of thing I heard someone describing on a recent commute. I wanted to work a grid search example to estimate something without a closed form solution, so I came up with this as a toy problem.
+
+<b>Objective</b>: For games played in week 1 thru 17, find the point which minimizes the total euclidean distance between a team's ATS margin of victory and the over/under (i,e,. 'total margin').
+
+### Example: 2024 Pittsburgh Steelers
+
+I'll pull in the 2024 Pittsburgh Steelers data and plot the ATS and total margin for each of the 16 games played as of week 17.
+
+```{r}
+
+# Get 2024 Data
+df <- nflfastR::load_pbp(2024) %>%
+  filter(
+    season_type == "REG" &
+      (home_team == "PIT" |
+         away_team == "PIT")
+  ) %>%
+  # Keep only relevant columns
+  select(
+    game_id, season, week,
+    home_team, away_team,
+    home_score, away_score,
+    result, total,
+    spread_line, total_line
+  ) %>%
+  # Final results are include on each row of each game.
+  # For each game, keep only a single instance.
+  group_by(game_id) %>%
+  slice_head(n = 1) %>%
+  ungroup() %>%
+  # Calculate margins
+  mutate(
+    total_margin = total - total_line,
+    home_ats_margin =  result - spread_line,
+    away_ats_margin = -1L * home_ats_margin
+  )
+
+pit_df <-
+  # Make a complete PIT record by combining PIT home games
+  # with PIT away games.
+  bind_rows(
+    df %>%
+      filter(
+        home_team == "PIT"
+      ) %>%
+      mutate(
+        team = "PIT",
+        pit_ats_margin =
+          home_ats_margin,
+        opponent = away_team
+      ) %>%
+      select(
+        week, team, opponent,
+        pit_ats_margin, total_margin
+      ),
+    df %>%
+      filter(
+        away_team == "PIT"
+      ) %>%
+      mutate(
+        team = "PIT",
+        pit_ats_margin =
+          away_ats_margin,
+        opponent = home_team
+      ) %>%
+      select(
+        week, team, opponent,
+        pit_ats_margin, total_margin
+      )
+  ) %>%
+  arrange(week)
+
+pit_df %>%
+  ggplot(
+    aes(
+      x = pit_ats_margin,
+      y = total_margin
+    )
+  ) +
+  geom_vline(xintercept = 0) +
+  geom_hline(yintercept = 0) +
+  geom_nfl_logos(
+    aes(
+      team_abbr = opponent
+    ),
+    width = 0.05
+  ) +
+  scale_x_continuous(
+    breaks = seq(-60, 60, by = 6),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    breaks = seq(-60, 60, by = 6),
+    minor_breaks = NULL
+  ) +
+  coord_fixed() +
+  labs(
+    x = "Steelers ATS Margin (pts)",
+    y = "Game Total Margin (pts)",
+    title = "2024 Steelers (Thru Week 17)",
+    subtitle = "Logo = Opponent.",
+    caption = "Data: nflfastR:load_pbp(2024)"
+  ) +
+  theme_light()
+
+```
+
+Next, I'll make a grid of candidate solutions to check.  For each point, I'll calculate the total euclidean distance between the candidate point and all 16 game results.
+
+Then, I'll come to a point estimate by averaging over the the 10 points with the best performance (i.e., least total euclidean distance).
+
+I'll use a contour plot to see patterns in total euclidean distance across the candidate grid to see if this is sensible.
+
+```{r}
+
+# Make a grid of values to search over.
+pit_candidate_grid <-
+  crossing(
+    pit_ats_margin = seq(-14, 14, by = 0.5),
+    total_margin = seq(-14, 14, by = 0.5)
+  ) %>%
+  # Metric to be minimized will be euclidean distance
+  # from each candidate pair.
+  mutate(
+    sum_euclidean_dist = NA_real_ 
+  )
+  
+pit_iteration_df <-
+  pit_df %>%
+  mutate(
+    euclidean_dist = NA_real_
+  )
+
+for(i in 1:nrow(pit_candidate_grid)){
+  pit_iteration_df <- pit_iteration_df %>%
+    mutate(
+      euclidean_dist =
+        sqrt(
+          (pit_ats_margin - pit_candidate_grid$pit_ats_margin[i])^2 +
+            (total_margin - pit_candidate_grid$total_margin[i])^2
+        )
+    )
+  
+  pit_candidate_grid$sum_euclidean_dist[i] =
+    sum(pit_iteration_df$euclidean_dist)
+}
+
+pit_estimate_df <-
+  pit_candidate_grid %>%
+  # Take the 10 best candidates...
+  slice_min(
+    order_by = sum_euclidean_dist,
+    n = 10
+  ) %>%
+  # and average over each component
+  # to develop point estimate.
+  summarize(
+    pit_ats_margin = mean(pit_ats_margin),
+    total_margin = mean(total_margin)
+  )
+
+pit_candidate_grid %>%
+  ggplot(
+    aes(
+      x = pit_ats_margin,
+      y = total_margin
+    )
+  ) +
+  geom_contour_filled(
+    aes(
+      z = sum_euclidean_dist
+    ),
+    binwidth = 10
+  ) +
+  geom_vline(xintercept = 0, color = "white") +
+  geom_hline(yintercept = 0, color = "white") +
+  geom_nfl_logos(
+    data = pit_df,
+    aes(
+      team_abbr = opponent
+    ),
+    width = 0.05
+  ) +
+  geom_point(
+    data = pit_candidate_grid %>%
+      slice_min(
+        order_by = sum_euclidean_dist,
+        n = 10
+      ),
+    color = "red"
+  ) +
+  geom_point(
+    data = pit_estimate_df,
+    color = "white",
+    shape = 2
+  ) +
+  scale_x_continuous(
+    breaks = seq(-60, 60, by = 6),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    breaks = seq(-60, 60, by = 6),
+    minor_breaks = NULL
+  ) +
+  coord_fixed(
+    xlim = c(-14, 14),
+    ylim = c(-14, 14)
+  ) +
+  labs(
+    x = "Steelers ATS Margin (pts)",
+    y = "Game Total Margin (pts)",
+    title = "2024 Steelers (Thru Week 17)",
+    subtitle = "Logo = Opponent. Red = 10 Best Estimates.\nWhite = Estimate (Average Over Red).",
+    caption = "Data: nflfastR:load_pbp(2024)"
+  ) +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+## A League-wide Function
+
+Here, I write a function to do this for all teams in the league for a given season.
+
+```{r}
+# League wide for season
+calculate_vegas_margins <-
+  function(team_of_interest, season_of_interest = 2024L){
+    
+    # Load regular season data for the season of interest.
+    df <- nflfastR::load_pbp(season_of_interest) %>%
+      filter(
+        season_type == "REG" &
+          week <= 17L
+      ) %>%
+      select(
+        game_id, season, week,
+        home_team, away_team,
+        home_score, away_score,
+        result, total,
+        spread_line, total_line
+      )
+    
+    # Make a vector of all teams that appear in the season
+    # of interest.
+    teams <-
+      df %>%
+      pull(home_team) %>%
+      unique() %>%
+      sort()
+    
+    # Make a data frame of all final game results.
+    df_results <-
+      df %>%
+      group_by(game_id) %>%
+      slice_head(n = 1) %>%
+      ungroup() %>%
+      mutate(
+        total_margin = total - total_line,
+        home_ats_margin =  result - spread_line,
+        away_ats_margin = -1L * home_ats_margin
+      )
+    
+    home_df <-
+      df_results %>%
+      rename(
+        team = home_team,
+        opponent = away_team,
+        ats_margin = home_ats_margin,
+      ) %>%
+      mutate(
+        home_away = "home"
+      ) %>%
+      select(
+        season, week,
+        team, opponent, home_away,
+        total_margin, ats_margin
+      )
+    
+    away_df <-
+      df_results %>%
+      rename(
+        team = away_team,
+        opponent = home_team,
+        ats_margin = away_ats_margin,
+      ) %>%
+      mutate(
+        home_away = "away"
+      ) %>%
+      select(
+        season, week,
+        team, opponent, home_away,
+        total_margin, ats_margin
+      )
+    
+    long_df <-
+      bind_rows(
+        home_df, away_df
+      ) %>%
+      arrange(
+        season, team, week
+      )
+    
+    # Search grid for point that minimizes the
+    # Euclidean distance from each games ATS margin
+    # and over/under total margin.
+    candidate_grid <-
+      crossing(
+        ats_margin = seq(-14, 14, by = 0.5),
+        total_margin = seq(-14, 14, by = 0.5)
+      ) %>%
+      mutate(
+        sum_euclidean_dist = NA_real_ 
+      )
+    
+    # Stores total euclidean distance for each
+    # candidate pair of ats_margin and total_margin.
+    iteration_df <-
+      long_df %>%
+      filter(
+        team == team_of_interest &
+          season == season_of_interest
+      ) %>%
+      mutate(
+        euclidean_dist = NA_real_
+      )
+    
+    for(i in 1:nrow(candidate_grid)){
+      iteration_df <- iteration_df %>%
+        mutate(
+          euclidean_dist =
+            sqrt(
+              (ats_margin - candidate_grid$ats_margin[i])^2 +
+                (total_margin - candidate_grid$total_margin[i])^2
+            )
+        )
+      
+      candidate_grid$sum_euclidean_dist[i] =
+        sum(iteration_df$euclidean_dist)
+    }
+    
+    return_df <-
+      candidate_grid %>%
+      slice_min(
+        order_by = sum_euclidean_dist,
+        n = 10
+      ) %>%
+      summarize(
+        ats_margin = mean(ats_margin),
+        total_margin = mean(total_margin)
+      )
+    
+    return(return_df)
+  }
+
+```
+
+## 2024 NFL Results
+
+#### Weeks 1-17
+
+```{r}
+all_teams <-
+  load_pbp(2023) %>%
+  pull(home_team) %>%
+  unique() %>%
+  sort()
+
+all_team_results_2024 <-
+  map_df(
+    .x = all_teams,
+    .f = calculate_vegas_margins,
+    season_of_interest = 2024L
+  ) %>%
+  bind_cols(
+    df = 
+      data.frame(
+        team = all_teams,
+        season = 2024L
+      )
+  )
+
+
+all_team_results_2024 %>%
+  ggplot(
+    aes(
+      x = ats_margin,
+      y = total_margin
+    )
+  ) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_nfl_logos(
+    aes(
+      team_abbr = team
+    ),
+    width = 0.05
+  ) +
+  scale_x_continuous(
+    breaks = seq(-18, 18, by = 3),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    breaks = seq(-18, 18, by = 3),
+    minor_breaks = NULL
+  ) +
+  coord_fixed() +
+  labs(
+    x = "Central ATS Margin (pts)",
+    y = "Central Total Margin (pts)",
+    title = "2024 (Thru Week 17)",
+    subtitle = "Logo = Team Point Estimate.",
+    caption = "Data: nflfastR:load_pbp(2024)"
+  ) +
+  theme_light()
+
+all_team_results_2024 %>%
+  arrange(
+    desc(ats_margin)
+  ) %>%
+  select(season, team, everything()) %>%
+  DT::datatable(
+    colnames =
+      list(
+        "Season",
+        "Team",
+        "Central ATS Margin",
+        "Central Total Margin"
+      ),
+    options = list(
+      pageLength = 32
+    )
+  )
+
+```
+
+## 2023 NFL Results
+
+#### Weeks 1-17
+
+```{r}
+
+all_team_results_2023 <-
+  map_df(
+    .x = all_teams,
+    .f = calculate_vegas_margins,
+    season_of_interest = 2023L
+  ) %>%
+  bind_cols(
+    df = 
+      data.frame(
+        team = all_teams,
+        season = 2023L
+      )
+  )
+
+all_team_results_2023 %>%
+  ggplot(
+    aes(
+      x = ats_margin,
+      y = total_margin
+    )
+  ) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_nfl_logos(
+    aes(
+      team_abbr = team
+    ),
+    width = 0.05
+  ) +
+  scale_x_continuous(
+    breaks = seq(-18, 18, by = 3),
+    minor_breaks = NULL
+  ) +
+  scale_y_continuous(
+    breaks = seq(-18, 18, by = 3),
+    minor_breaks = NULL
+  ) +
+  coord_fixed() +
+  labs(
+    x = "Central ATS Margin (pts)",
+    y = "Central Total Margin (pts)",
+    title = "2023 (Thru Week 17)",
+    subtitle = "Logo = Team Point Estimate.",
+    caption = "Data: nflfastR:load_pbp(2023)"
+  ) +
+  theme_light()
+
+all_team_results_2023 %>%
+  arrange(
+    desc(ats_margin)
+  ) %>%
+  select(season, team, everything()) %>%
+  DT::datatable(
+    colnames =
+      list(
+        "Season",
+        "Team",
+        "Central ATS Margin",
+        "Central Total Margin"
+      ),
+    options = list(
+      pageLength = 32
+    )
+  )
+
+```
+
