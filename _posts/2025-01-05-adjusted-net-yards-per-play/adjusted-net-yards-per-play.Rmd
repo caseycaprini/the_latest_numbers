@@ -1,0 +1,284 @@
+---
+title: "2024 Adjusted Net Yards Per Play"
+description: |
+  Random intercepts model, week 1 through 17.
+author:
+  - name: Casey Caprini
+    url: {}
+date: 2025-01-05
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+---
+
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(nflfastR)
+library(nflplotR)
+library(lme4)
+
+
+penalty_yards_gained <- function(df){
+  df %>%
+    mutate(yards_gained = ifelse(play_type_nfl == "PENALTY",
+                                 ifelse(penalty_team == posteam,
+                                        -1 * penalty_yards,
+                                        penalty_yards),
+                                 yards_gained)) %>%
+    return()
+}
+
+```
+
+
+## 2024 Estimates
+
+In a past [post](https://caseycaprini.github.io/the_latest_numbers/posts/2022-09-12-nfl-basic-multilevel-models/), I made a simple multilevel model for adjusted yards per play estimates for team offenses and defenses, including penalty yardage.
+
+```{r model}
+pbp_df <-
+  nflfastR::load_pbp(2024) %>%
+  filter(season_type == "REG") %>%
+  filter(week <= 17) %>%
+  filter(play_type_nfl %in% c("GAME_START",
+                              "KICK_OFF",
+                              "PUNT",
+                              "TIMEOUT",
+                              "FIELD_GOAL",
+                              "XP_KICK",
+                              "END_QUARTER",
+                              "END_GAME",
+                              "PAT2",
+                              "FREE_KICK",
+                              "COMMENT") == F) %>%
+  filter(is.na(play_type_nfl) == F) %>%
+  filter(play_type %in% c("qb_kneel",
+                          "qb_spike") == F) %>%
+  filter(grepl("(Punt formation)", desc) == F) %>%
+  filter(grepl(", offsetting.", desc) == F) %>%
+  penalty_yards_gained()
+
+
+mod_rand_int <- 
+  lmer(
+    yards_gained ~ 1 + (1|posteam) + (1|defteam),
+    data = pbp_df
+  )
+
+
+off_rand_int <- coef(mod_rand_int)$posteam %>%
+  rownames_to_column(var = "team") %>%
+  rename(off_estimate = `(Intercept)`)
+
+def_rand_int <- coef(mod_rand_int)$defteam %>%
+  rownames_to_column(var = "team") %>%
+  rename(def_estimate = `(Intercept)`)
+
+est_df <- 
+  left_join(
+    off_rand_int,
+    def_rand_int,
+    by = "team"
+  ) %>%
+  mutate(combined_estimate = off_estimate - def_estimate) %>%
+  arrange(desc(combined_estimate))
+```
+
+#### Partial Pooling Effect
+
+```{r partial_pooling_plot}
+avg_yards_per_play <-
+  pbp_df %>%
+  filter(
+    !(is.na(yards_gained))
+  ) %>%
+  pull(yards_gained) %>%
+  mean()
+
+
+unpooled_df <-
+  left_join(
+    pbp_df %>%
+      group_by(defteam) %>%
+      summarize(
+        def_yds_per_play = mean(yards_gained, na.rm = T)
+      ) %>%
+      rename(
+        team = defteam
+      ),
+    pbp_df %>%
+      group_by(posteam) %>%
+      summarize(
+        off_yds_per_play = mean(yards_gained, na.rm = T)
+      ) %>%
+      rename(
+        team = posteam
+      )
+  )
+  
+est_df <-
+  left_join(
+    est_df,
+    unpooled_df
+  )
+
+
+est_df %>%
+  ggplot(
+    aes(
+      x = off_estimate,
+      y = def_estimate
+    )
+  ) +
+  geom_hline(yintercept = avg_yards_per_play) +
+  geom_vline(xintercept = avg_yards_per_play) +
+  geom_point(
+    aes(
+      x = off_yds_per_play,
+      y = def_yds_per_play,
+      color = team
+    )
+  ) +
+  geom_segment(
+    aes(
+      x = off_yds_per_play,
+      xend = off_estimate,
+      y = def_yds_per_play,
+      yend = def_estimate,
+      color = team
+    )
+  ) +
+  geom_nfl_logos(
+    aes(
+      team_abbr = team
+    ),
+    width = 0.05
+  ) +
+  scale_y_continuous(
+    breaks = seq(0.0, 10.0, by = 0.2),
+    minor_breaks = NULL
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 10.0, by = 0.2),
+    minor_breaks = NULL
+  ) +
+  scale_color_nfl() +
+  labs(
+    x = "Offensive Yards Per Play",
+    y = "Defensive Yards Per Play",
+    title = "2024 Weeks 1-17: Adjusted Yards Per Play",
+    subtitle = "The Plexiglass Principle Adaptively Applied Via Partial Pooling",
+    caption = "Model: lme4::lmer(yards_gained ~ 1 + (1|posteam) + (1|defteam)).\nData: nflfastR::load_pbp(2024)"
+  ) +
+  theme_light() +
+  coord_fixed(
+    xlim = c(4.2, 6.2),
+    ylim = c(4.2, 6.2)
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+#### Adjust Net Yards Per Play Estimates
+
+```{r adj_net_yards_per_play}
+
+est_df %>%
+  arrange(
+    desc(combined_estimate)
+  ) %>%
+  mutate(
+    rank = row_number()
+  ) %>%
+  ggplot(
+    aes(
+      x = combined_estimate,
+      y = rank
+    )
+  ) +
+  geom_hline(
+    yintercept = c(0.5, 16.5, 32.5)
+  ) +
+  geom_hline(
+    yintercept = c(4.5, 8.5, 12.5, 20.5, 24.5, 28.5),
+    linetype = "dashed"
+  ) +
+  geom_vline(xintercept = 0) +
+  geom_segment(
+    aes(
+      x = 0,
+      xend = combined_estimate,
+      y = rank,
+      yend = rank,
+      color = team
+    )
+  ) +
+  geom_nfl_logos(
+    aes(
+      team_abbr = team
+    ),
+    width = 0.05
+  ) +
+  geom_point(
+    aes(
+      x = off_yds_per_play - def_yds_per_play,
+      color = team
+    ),
+    shape = "X",
+    size = 3
+  ) +
+  scale_color_nfl() +
+  scale_y_reverse(
+    breaks = NULL,
+    labels = NULL
+  ) +
+  scale_x_continuous(
+    minor_breaks = NULL
+  ) +
+  theme_light() +
+  labs(
+    x = "Adjusted Net Yards Per Play (yds)",
+    y = NULL,
+    title = "Net Adjusted Yards Per Play\n(Offense Estimate - Defense Estimate)",
+    subtitle = "Logo: Random intercept derived estimate. X: Raw average.",
+    caption = "Data: nflfastR::load_pbp(2024), Weeks 1-17"
+  )
+
+```
+
+```{r table}
+
+est_df %>%
+  arrange(
+    desc(combined_estimate)
+  ) %>%
+  mutate(
+    season = 2024L,
+    off_estimate = round(off_estimate, 2),
+    def_estimate = round(def_estimate, 2),
+    combined_estimate = round(combined_estimate, 2),
+    def_yds_per_play = round(def_yds_per_play, 2),
+    off_yds_per_play = round(off_yds_per_play, 2)
+  ) %>%
+  select(season, team, everything()) %>%
+  DT::datatable(
+    colnames = list(
+      "Season",
+      "Team",
+      "Off Estimate",
+      "Def Estimate",
+      "Net Estimate",
+      "Def Raw",
+      "Off Raw"
+    ), 
+    options = list(
+      pageLength = 32
+    )
+  )
+
+```
